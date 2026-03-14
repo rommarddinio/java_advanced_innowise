@@ -14,13 +14,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PaymentCardDto {
 
+    private Long id;
+
     @NotEmpty(message = "Number should not be empty")
     @Pattern(regexp = "\\d{4} \\d{4} \\d{4} \\d{4}",
             message = "Number must be in format XXXX XXXX XXXX XXXX")
     private String number;
 
     @NotEmpty(message = "Holder can not be empty")
-    @Pattern(regexp = "[A-Z]+ [A-Z]",
+    @Pattern(regexp = "[A-Z]+ [A-Z]+",
             message = "Holder must contain only uppercase letters separated by spaces")
     private String holder;
 
