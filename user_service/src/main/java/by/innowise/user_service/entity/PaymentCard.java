@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,13 +13,20 @@ import java.time.Instant;
 @Entity
 @Table(name = "payment_cards")
 public class PaymentCard extends Auditable{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String number;
+
     private String holder;
-    private Instant expiration_date;
+
+    @Column(name = "expiration_date")
+    private LocalDate expirationDate;
+
     private boolean active;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
