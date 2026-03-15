@@ -37,6 +37,7 @@ public class PaymentCardServiceImpl implements PaymentCardService{
         if (user.getPaymentCards().size() >=5) {
             throw new CardLimitException();
         }
+        paymentCardDto.setActive(true);
         return paymentCardMapper.toPaymentCardDto(paymentCardRepository.save(paymentCardMapper
                 .toPaymentCard(paymentCardDto)));
     }
@@ -52,7 +53,7 @@ public class PaymentCardServiceImpl implements PaymentCardService{
                 .orElseThrow(CardNotFoundException::new);
 
         paymentCard.setNumber(paymentCardDto.getNumber());
-        paymentCard.setHolder(paymentCard.getHolder());
+        paymentCard.setHolder(paymentCardDto.getHolder());
         paymentCard.setExpirationDate(paymentCardDto.getExpirationDate());
         paymentCard.setUser(userRepository.findById(paymentCardDto.getUserId()).
                 orElseThrow(UserNotFoundException::new));
