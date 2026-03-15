@@ -1,0 +1,64 @@
+name: pipeline
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build-test-sonar-docker:
+    name: Build, Test, Sonar, Docker
+    runs-on: ubuntu-latest
+
+    env:
+
+      DB_URL: jdbc:postgresql://postgres:5432/userDB
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_PROFILES_ACTIVE: docker
+      DOCKER_IMAGE_NAME: user_service
+      DOCKER_REGISTRY: docker.io
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Build with Maven
+        run: mvn clean package -B
+
+      - name: Run Tests
+        run: mvn test -B
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.projectKey=rommarddinio_java_advanced_innowise
+            -Dsonar.organization=rommarddinio
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker build -t $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest .
+
+      - name: Push Docker image
+        run: docker push $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest
