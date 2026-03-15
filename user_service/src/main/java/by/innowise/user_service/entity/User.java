@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -32,5 +33,6 @@ public class User extends Auditable{
     private boolean active;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @BatchSize(size = 5)
     private Set<PaymentCard> paymentCards = new HashSet<>();
 }
