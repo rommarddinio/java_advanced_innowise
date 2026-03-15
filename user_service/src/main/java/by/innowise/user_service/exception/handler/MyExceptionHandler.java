@@ -1,5 +1,6 @@
 package by.innowise.user_service.exception.handler;
 
+import by.innowise.user_service.exception.CardLimitException;
 import by.innowise.user_service.exception.CardNotFoundException;
 import by.innowise.user_service.exception.UserNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +23,11 @@ public class MyExceptionHandler {
     @ExceptionHandler(CardNotFoundException.class)
     public ResponseEntity<String> handleUserNotFound(CardNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CardLimitException.class)
+    public ResponseEntity<String> handleCardLimit(CardLimitException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
