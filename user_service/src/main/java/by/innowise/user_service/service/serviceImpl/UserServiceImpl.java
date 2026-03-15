@@ -28,6 +28,10 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDto(userRepository.save(userMapper.toUser(userDto)));
     }
 
+    @CacheEvict(
+            value = "user",
+            key = "#id"
+    )
     @Transactional
     @Override
     public UserDto updateUser(Long id, UserDto userDto) {
@@ -42,12 +46,20 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDto(userRepository.save(user));
     }
 
+    @Cacheable(
+            value = "user",
+            key = "#id"
+    )
     @Override
     public UserDto findById(Long id) {
         return userRepository.findById(id).map(userMapper::toUserDto)
                 .orElseThrow(UserNotFoundException::new);
     }
 
+    @CacheEvict(
+            value = "user",
+            key = "#id"
+    )
     @Transactional
     @Override
     public void activateUser(Long id) {
@@ -55,6 +67,10 @@ public class UserServiceImpl implements UserService {
         if (rows == 0) throw new UserNotFoundException();
     }
 
+    @CacheEvict(
+            value = "user",
+            key = "#id"
+    )
     @Transactional
     @Override
     public void deactivateUser(Long id) {
@@ -70,11 +86,13 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toUserDto);
     }
 
+    @CacheEvict(
+            value = "user",
+            key = "#id"
+    )
     @Transactional
     @Override
     public void deleteById(Long id) {
-        userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
         userRepository.deleteById(id);
     }
 }

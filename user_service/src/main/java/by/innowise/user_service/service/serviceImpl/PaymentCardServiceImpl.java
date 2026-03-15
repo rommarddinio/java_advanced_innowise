@@ -12,6 +12,8 @@ import by.innowise.user_service.repository.UserRepository;
 import by.innowise.user_service.service.PaymentCardService;
 import by.innowise.user_service.specification.PaymentCardSpecifications;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,6 +41,10 @@ public class PaymentCardServiceImpl implements PaymentCardService{
                 .toPaymentCard(paymentCardDto)));
     }
 
+    @CacheEvict(
+            value = "payment_card",
+            key = "#id"
+    )
     @Transactional
     @Override
     public PaymentCardDto updatePaymentCard(Long id, PaymentCardDto paymentCardDto) {
@@ -48,17 +54,26 @@ public class PaymentCardServiceImpl implements PaymentCardService{
         paymentCard.setNumber(paymentCardDto.getNumber());
         paymentCard.setHolder(paymentCard.getHolder());
         paymentCard.setExpirationDate(paymentCardDto.getExpirationDate());
-        paymentCard.setUser(userRepository.findById(paymentCardDto.getUserId()).orElseThrow());
+        paymentCard.setUser(userRepository.findById(paymentCardDto.getUserId()).
+                orElseThrow(UserNotFoundException::new));
 
         return paymentCardMapper.toPaymentCardDto(paymentCardRepository.save(paymentCard));
     }
 
+    @Cacheable(
+            value = "payment_card",
+            key = "#id"
+    )
     @Override
     public PaymentCardDto findById(Long id) {
         return paymentCardRepository.findById(id).map(paymentCardMapper::toPaymentCardDto)
                 .orElseThrow(CardNotFoundException::new);
     }
 
+    @CacheEvict(
+            value = "payment_card",
+            key = "#id"
+    )
     @Transactional
     @Override
     public void activatePaymentCard(Long id) {
@@ -66,6 +81,10 @@ public class PaymentCardServiceImpl implements PaymentCardService{
         if (rows == 0) throw new CardNotFoundException();
     }
 
+    @CacheEvict(
+            value = "payment_card",
+            key = "#id"
+    )
     @Transactional
     @Override
     public void deactivatePaymentCard(Long id) {
@@ -93,6 +112,10 @@ public class PaymentCardServiceImpl implements PaymentCardService{
                 .toList();
     }
 
+    @CacheEvict(
+            value = "payment_card",
+            key = "#id"
+    )
     @Transactional
     @Override
     public void deleteById(Long id) {
