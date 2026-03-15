@@ -32,5 +32,7 @@ public class PaymentCardDto {
 
     private Boolean active;
 
+    @NotNull(message = "User ID is required")
+    @Min(value = 1, message = "User ID must be greater than 0")
     private Long userId;
 }
