@@ -40,6 +40,10 @@ jobs:
         run: mvn clean package -B
         working-directory: user_service
 
+      - name: Copy Maven dependencies
+        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency -B
+        working-directory: user_service
+
       - name: Run Tests
         run: mvn test jacoco:report -B
         working-directory: user_service
@@ -52,9 +56,12 @@ jobs:
             -Dsonar.organization=rommarddinio
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.java.binaries=user_service/target/classes
             -Dsonar.sources=user_service/src/main/java,user_service/target/generated-sources/annotations
             -Dsonar.tests=user_service/src/test/java
+            -Dsonar.java.binaries=user_service/target/classes
+            -Dsonar.java.libraries=user_service/target/dependency/**/*.jar
+            -Dsonar.java.test.binaries=user_service/target/test-classes
+            -Dsonar.java.test.libraries=user_service/target/dependency/**/*.jar
             -Dsonar.coverage.jacoco.xmlReportPaths=user_service/target/site/jacoco/jacoco.xml
 
       - name: Log in to Docker Hub
