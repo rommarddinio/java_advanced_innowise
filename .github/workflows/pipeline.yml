@@ -41,7 +41,7 @@ jobs:
         working-directory: user_service
 
       - name: Run Tests
-        run: mvn test -B
+        run: mvn test jacoco:report -B
         working-directory: user_service
 
       - name: SonarQube Scan
