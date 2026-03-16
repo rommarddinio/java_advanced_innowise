@@ -53,6 +53,8 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             -Dsonar.java.binaries=user_service/target/classes
+            -Dsonar.sources=user_service/src/main/java,user_service/target/generated-sources/annotations
+            -Dsonar.tests=user_service/src/test/java
             -Dsonar.coverage.jacoco.xmlReportPaths=user_service/target/site/jacoco/jacoco.xml
 
       - name: Log in to Docker Hub
