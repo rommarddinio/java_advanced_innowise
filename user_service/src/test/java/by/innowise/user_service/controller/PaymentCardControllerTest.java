@@ -38,7 +38,7 @@ class PaymentCardControllerTest{
 
     @Container
     static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16")
+            new PostgreSQLContainer<>("postgres")
                     .withDatabaseName("test_db")
                     .withUsername("postgres")
                     .withPassword("postgres");
