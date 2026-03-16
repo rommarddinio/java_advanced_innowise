@@ -18,4 +18,8 @@ public interface PaymentCardRepository extends JpaRepository<PaymentCard, Long>,
 
     List<PaymentCard> findByUserId(Long id);
 
+    @Modifying
+    @Query ("UPDATE PaymentCard p SET p.active = false WHERE p.user.id = :id")
+    void deactivateByUserId(Long id);
+
 }

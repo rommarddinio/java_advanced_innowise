@@ -4,6 +4,7 @@ import by.innowise.user_service.dto.UserDto;
 import by.innowise.user_service.dto.mapping.UserMapper;
 import by.innowise.user_service.entity.User;
 import by.innowise.user_service.exception.UserNotFoundException;
+import by.innowise.user_service.repository.PaymentCardRepository;
 import by.innowise.user_service.repository.UserRepository;
 import by.innowise.user_service.service.UserService;
 import by.innowise.user_service.specification.UserSpecifications;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final PaymentCardRepository paymentCardRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -77,6 +79,7 @@ public class UserServiceImpl implements UserService {
     public void deactivateUser(Long id) {
         int rows = userRepository.setActiveUser(id, false);
         if (rows == 0) throw new UserNotFoundException();
+        paymentCardRepository.deactivateByUserId(id);
     }
 
     @Override

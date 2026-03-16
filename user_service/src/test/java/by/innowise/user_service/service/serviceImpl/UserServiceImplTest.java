@@ -4,6 +4,7 @@ import by.innowise.user_service.dto.UserDto;
 import by.innowise.user_service.dto.mapping.UserMapper;
 import by.innowise.user_service.entity.User;
 import by.innowise.user_service.exception.UserNotFoundException;
+import by.innowise.user_service.repository.PaymentCardRepository;
 import by.innowise.user_service.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,9 @@ class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PaymentCardRepository paymentCardRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -279,6 +283,7 @@ class UserServiceImplTest {
         userService.deactivateUser(1L);
 
         verify(userRepository).setActiveUser(1L, false);
+        verify(paymentCardRepository).deactivateByUserId(1L);
 
     }
 
