@@ -124,6 +124,26 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void updatePaymentCard_ShouldReturn404_WhenNotFound() throws Exception {
+
+        mockMvc.perform(put("/cards/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createPaymentCard_ShouldReturn404_WhenUserNotFound() throws Exception {
+
+        dto.setUserId(999L);
+
+        mockMvc.perform(post("/cards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void findById_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
 
         Long id = paymentCard.getId();

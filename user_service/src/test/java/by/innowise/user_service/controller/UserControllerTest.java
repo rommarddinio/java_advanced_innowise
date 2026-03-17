@@ -99,6 +99,18 @@ class UserControllerTest {
     }
 
     @Test
+    void createUser_ShouldReturn400_WhenInvalidData() throws Exception {
+
+        dto.setName(null);
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
     void updateUser_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
 
         mockMvc.perform(put("/users/{id}", user.getId())
@@ -107,6 +119,16 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Maksim"))
                 .andExpect(jsonPath("$.email").value("maksimsidorcuk1@gmail.com"));
+
+    }
+
+    @Test
+    void updateUser_ShouldReturn404_WhenNotFound() throws Exception {
+
+        mockMvc.perform(put("/users/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
 
     }
 
@@ -143,8 +165,14 @@ class UserControllerTest {
     @Test
     void activateUser_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
+        user.setActive(false);
+        userRepository.save(user);
+
         mockMvc.perform(patch("/users/{id}/activate", user.getId()))
                 .andExpect(status().isNoContent());
+
+        User updated = userRepository.findById(user.getId()).orElseThrow();
+        assertEquals(true, updated.isActive());
 
     }
 
@@ -159,8 +187,14 @@ class UserControllerTest {
     @Test
     void deactivateUser_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
+        user.setActive(true);
+        userRepository.save(user);
+
         mockMvc.perform(patch("/users/{id}/deactivate", user.getId()))
                 .andExpect(status().isNoContent());
+
+        User updated = userRepository.findById(user.getId()).orElseThrow();
+        assertEquals(false, updated.isActive());
 
     }
 
