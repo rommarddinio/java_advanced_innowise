@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-auditing
+      author: Roman
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp

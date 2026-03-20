@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-indexes-payment-cards-table
+      author: Roman
+      changes:
+        - createIndex:
+            tableName: payment_cards
+            indexName: index_payment_cards_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: payment_cards
+            unique: true
+            indexName: index_payment_cards_number
+            columns:
+              - column:
+                  name: number
