@@ -124,6 +124,48 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void createPaymentCard_ShouldReturn409_WhenCardLimitReached() throws Exception {
+
+        PaymentCard paymentCard2 = new PaymentCard();
+        paymentCard2.setNumber("1222 2222 2222 2222");
+        paymentCard2.setHolder("RAMAN SIDARCHUK");
+        paymentCard2.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard2.setActive(true);
+        paymentCard2.setUser(user);
+        paymentCardRepository.save(paymentCard2);
+
+        PaymentCard paymentCard3 = new PaymentCard();
+        paymentCard3.setNumber("3333 3333 3333 3333");
+        paymentCard3.setHolder("RAMAN SIDARCHUK");
+        paymentCard3.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard3.setActive(true);
+        paymentCard3.setUser(user);
+        paymentCardRepository.save(paymentCard3);
+
+        PaymentCard paymentCard4 = new PaymentCard();
+        paymentCard4.setNumber("4444 4444 4444 4444");
+        paymentCard4.setHolder("RAMAN SIDARCHUK");
+        paymentCard4.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard4.setActive(true);
+        paymentCard4.setUser(user);
+        paymentCardRepository.save(paymentCard4);
+
+        PaymentCard paymentCard5 = new PaymentCard();
+        paymentCard5.setNumber("5555 5555 5555 5555");
+        paymentCard5.setHolder("RAMAN SIDARCHUK");
+        paymentCard5.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard5.setActive(true);
+        paymentCard5.setUser(user);
+        paymentCardRepository.save(paymentCard5);
+
+        mockMvc.perform(post("/cards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict());
+
+    }
+
+    @Test
     void updatePaymentCard_ShouldReturn404_WhenNotFound() throws Exception {
 
         mockMvc.perform(put("/cards/999")
