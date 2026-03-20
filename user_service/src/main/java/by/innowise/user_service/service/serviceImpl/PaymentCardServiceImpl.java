@@ -14,6 +14,7 @@ import by.innowise.user_service.specification.PaymentCardSpecifications;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,22 +31,23 @@ public class PaymentCardServiceImpl implements PaymentCardService{
     private final PaymentCardRepository paymentCardRepository;
     private final PaymentCardMapper paymentCardMapper;
 
+    @Transactional
     @Override
     public PaymentCardDto createPaymentCard(PaymentCardDto paymentCardDto) {
-        User user = userRepository.findById(paymentCardDto.getUserId())
+        userRepository.findById(paymentCardDto.getUserId())
                 .orElseThrow(UserNotFoundException::new);
-        if (user.getPaymentCards().size() >=5) {
+        if (paymentCardRepository.countByUserId(paymentCardDto.getUserId()) >= 5)
             throw new CardLimitException();
-        }
+
         paymentCardDto.setActive(true);
         return paymentCardMapper.toPaymentCardDto(paymentCardRepository.save(paymentCardMapper
                 .toPaymentCard(paymentCardDto)));
     }
 
-    @CacheEvict(
-            value = "payment_card",
-            key = "#id"
-    )
+    @Caching(evict = {
+            @CacheEvict(value = "payment_card", key = "#id"),
+            @CacheEvict(value = "user", key = "#paymentCardDto.userId")
+    })
     @Transactional
     @Override
     public PaymentCardDto updatePaymentCard(Long id, PaymentCardDto paymentCardDto) {

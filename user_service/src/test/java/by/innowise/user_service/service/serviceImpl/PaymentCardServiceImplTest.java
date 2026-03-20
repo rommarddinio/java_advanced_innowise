@@ -64,6 +64,7 @@ class PaymentCardServiceImplTest {
         paymentCard.setUser(user);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(paymentCardRepository.countByUserId(1L)).thenReturn(1);
         when(paymentCardMapper.toPaymentCard(paymentCardDto)).thenReturn(paymentCard);
         when(paymentCardRepository.save(paymentCard)).thenReturn(paymentCard);
         when(paymentCardMapper.toPaymentCardDto(paymentCard)).thenReturn(paymentCardDto);
@@ -74,6 +75,7 @@ class PaymentCardServiceImplTest {
         assertEquals(1L, result.getUserId());
 
         verify(userRepository).findById(1L);
+        verify(paymentCardRepository).countByUserId(1L);
         verify(paymentCardMapper).toPaymentCard(paymentCardDto);
         verify(paymentCardRepository).save(paymentCard);
         verify(paymentCardMapper).toPaymentCardDto(paymentCard);
@@ -107,13 +109,14 @@ class PaymentCardServiceImplTest {
         user.setPaymentCards(paymentCardSet);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(paymentCardRepository.countByUserId(1L)).thenReturn(5);
 
         assertThrows(CardLimitException.class, () ->
                 paymentCardService.createPaymentCard(paymentCardDto));
 
         verify(userRepository).findById(1L);
+        verify(paymentCardRepository).countByUserId(1L);
         verifyNoInteractions(paymentCardMapper);
-        verifyNoInteractions(paymentCardRepository);
 
     }
 
@@ -125,6 +128,7 @@ class PaymentCardServiceImplTest {
         paymentCard.setUser(user);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(paymentCardRepository.countByUserId(1L)).thenReturn(1);
         when(paymentCardMapper.toPaymentCard(paymentCardDto)).thenReturn(paymentCard);
         when(paymentCardRepository.save(paymentCard)).thenThrow(DataIntegrityViolationException.class);
 
@@ -132,6 +136,7 @@ class PaymentCardServiceImplTest {
                 paymentCardService.createPaymentCard(paymentCardDto));
 
         verify(userRepository).findById(1L);
+        verify(paymentCardRepository).countByUserId(1L);
         verify(paymentCardMapper).toPaymentCard(paymentCardDto);
         verify(paymentCardRepository).save(paymentCard);
 
