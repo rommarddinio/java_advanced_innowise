@@ -1,4 +1,4 @@
-package by.innowise.authentification_service;
+package by.innowise.authentificationservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
