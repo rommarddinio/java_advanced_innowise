@@ -23,6 +23,8 @@ spring:
   redis:
    host: ${SPRING_REDIS_HOST}
    port: ${SPRING_REDIS_PORT}
+jwt:
+ secret: ${JWT_SECRET}
 
 ---
 spring:
@@ -45,3 +47,5 @@ spring:
   redis:
    host: ${SPRING_REDIS_HOST}
    port: ${SPRING_REDIS_PORT}
+jwt:
+ secret: ${JWT_SECRET}
