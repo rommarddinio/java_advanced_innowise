@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -25,6 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,9 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Testcontainers
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @TestPropertySource(properties = "JWT_SECRET=testsecret")
-@WithMockUser(username = "1L", roles = "ADMIN")
 class UserControllerTest {
 
     @Container
@@ -68,20 +66,25 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private User user;
+    private User testUser;
     private UserDto dto;
+    private MyUserDetails user;
+    private MyUserDetails admin;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
 
-        user = new User();
-        user.setName("Roman");
-        user.setSurname("Sidorchuk");
-        user.setBirthDate(LocalDate.of(2006, 2, 28));
-        user.setEmail("romansidorcuk1@gmail.com");
-        user.setActive(true);
-        user = userRepository.save(user);
+        testUser = new User();
+        testUser.setName("Roman");
+        testUser.setSurname("Sidorchuk");
+        testUser.setBirthDate(LocalDate.of(2006, 2, 28));
+        testUser.setEmail("romansidorcuk1@gmail.com");
+        testUser.setActive(true);
+        testUser = userRepository.save(testUser);
+
+        user = new MyUserDetails(testUser.getId(), "ROLE_USER");
+        admin = new MyUserDetails(testUser.getId(), "ROLE_ADMIN");
 
 
         dto = new UserDto();
@@ -119,7 +122,8 @@ class UserControllerTest {
     @Test
     void updateUser_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
 
-        mockMvc.perform(put("/users/{id}", user.getId())
+        mockMvc.perform(put("/users/{id}", testUser.getId())
+                        .with(user(admin))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -132,6 +136,7 @@ class UserControllerTest {
     void updateUser_ShouldReturn404_WhenNotFound() throws Exception {
 
         mockMvc.perform(put("/users/999")
+                        .with(user(admin))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
@@ -141,7 +146,8 @@ class UserControllerTest {
     @Test
     void findById_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
 
-        mockMvc.perform(get("/users/{id}", user.getId()))
+        mockMvc.perform(get("/users/{id}", testUser.getId())
+                        .with(user(admin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Roman"))
                 .andExpect(jsonPath("$.email").value("romansidorcuk1@gmail.com"));
@@ -151,7 +157,8 @@ class UserControllerTest {
     @Test
     void findById_ShouldReturn404_WhenNotFound() throws Exception {
 
-        mockMvc.perform(get("/users/99"))
+        mockMvc.perform(get("/users/99")
+                        .with(user(admin)))
                 .andExpect(status().isNotFound());
 
     }
@@ -161,7 +168,8 @@ class UserControllerTest {
 
         mockMvc.perform(get("/users")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .with(user(admin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].email").value("romansidorcuk1@gmail.com"));
@@ -171,21 +179,35 @@ class UserControllerTest {
     @Test
     void activateUser_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
-        user.setActive(false);
-        userRepository.save(user);
+        testUser.setActive(false);
+        userRepository.save(testUser);
 
-        mockMvc.perform(patch("/users/{id}/activate", user.getId()))
+        mockMvc.perform(patch("/users/{id}/activate", testUser.getId())
+                        .with(user(admin)))
                 .andExpect(status().isNoContent());
 
-        User updated = userRepository.findById(user.getId()).orElseThrow();
+        User updated = userRepository.findById(testUser.getId()).orElseThrow();
         assertEquals(true, updated.isActive());
+
+    }
+
+    @Test
+    void findSelfById_ShouldReturnCurrentUser() throws Exception {
+
+        mockMvc.perform(get("/users/me")
+                        .with(user(user)))
+                .andExpect(status().isOk());
 
     }
 
     @Test
     void activateUser_ShouldReturn404_WhenNotFound() throws Exception {
 
-        mockMvc.perform(patch("/users/99/activate"))
+        mockMvc.perform(patch("/users/99/activate")
+                        .with(user(MyUserDetails.builder()
+                                .userId(testUser.getId())
+                                .role("ROLE_ADMIN")
+                                .build())))
                 .andExpect(status().isNotFound());
 
     }
@@ -193,13 +215,14 @@ class UserControllerTest {
     @Test
     void deactivateUser_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
-        user.setActive(true);
-        userRepository.save(user);
+        testUser.setActive(true);
+        userRepository.save(testUser);
 
-        mockMvc.perform(patch("/users/{id}/deactivate", user.getId()))
+        mockMvc.perform(patch("/users/{id}/deactivate", testUser.getId())
+                        .with(user(admin)))
                 .andExpect(status().isNoContent());
 
-        User updated = userRepository.findById(user.getId()).orElseThrow();
+        User updated = userRepository.findById(testUser.getId()).orElseThrow();
         assertEquals(false, updated.isActive());
 
     }
@@ -207,7 +230,8 @@ class UserControllerTest {
     @Test
     void deactivateUser_ShouldReturn404_WhenNotFound() throws Exception {
 
-        mockMvc.perform(patch("/users/99/deactivate"))
+        mockMvc.perform(patch("/users/99/deactivate")
+                        .with(user(admin)))
                 .andExpect(status().isNotFound());
 
     }
@@ -215,7 +239,8 @@ class UserControllerTest {
     @Test
     void deleteUser_ShouldRemoveFromDatabase() throws Exception {
 
-        mockMvc.perform(delete("/users/{id}", user.getId()))
+        mockMvc.perform(delete("/users/{id}", testUser.getId())
+                        .with(user(admin)))
                 .andExpect(status().isNoContent());
 
         assertEquals(0, userRepository.count());

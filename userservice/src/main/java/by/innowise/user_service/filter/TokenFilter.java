@@ -30,6 +30,11 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (request.getMethod().equals("POST") && request.getRequestURI().equals("/users")) {
             filterChain.doFilter(request, response);
             return;

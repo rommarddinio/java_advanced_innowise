@@ -31,7 +31,7 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userId != null ? userId.toString() : "unknown";
+        return null;
     }
 
 }
