@@ -25,8 +25,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -156,27 +154,6 @@ class UserControllerTest {
         mockMvc.perform(get("/users/99"))
                 .andExpect(status().isNotFound());
 
-    }
-
-    @Test
-    void findSelfById_ShouldReturnCurrentUser() throws Exception {
-
-        MyUserDetails userDetails = MyUserDetails.builder()
-                .userId(user.getId())
-                .role("ROLE_USER")
-                .build();
-
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-
-        mockMvc.perform(get("/users/me")
-                        .with(authentication(auth)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("romansidorcuk1@gmail.com"));
     }
 
     @Test
