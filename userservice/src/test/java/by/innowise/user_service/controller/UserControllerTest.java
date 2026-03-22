@@ -1,5 +1,6 @@
 package by.innowise.user_service.controller;
 
+import by.innowise.user_service.dto.MyUserDetails;
 import by.innowise.user_service.dto.UserDto;
 import by.innowise.user_service.entity.User;
 import by.innowise.user_service.repository.UserRepository;
@@ -10,8 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -21,6 +25,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,7 +34,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Testcontainers
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
+@TestPropertySource(properties = "JWT_SECRET=testsecret")
+@WithMockUser(username = "1L", roles = "ADMIN")
 class UserControllerTest {
 
     @Container
@@ -148,6 +156,27 @@ class UserControllerTest {
         mockMvc.perform(get("/users/99"))
                 .andExpect(status().isNotFound());
 
+    }
+
+    @Test
+    void findSelfById_ShouldReturnCurrentUser() throws Exception {
+
+        MyUserDetails userDetails = MyUserDetails.builder()
+                .userId(user.getId())
+                .role("ROLE_USER")
+                .build();
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+        mockMvc.perform(get("/users/me")
+                        .with(authentication(auth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("romansidorcuk1@gmail.com"));
     }
 
     @Test
