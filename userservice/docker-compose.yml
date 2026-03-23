@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      - JWT_SECRET=mySecret
       - SPRING_PROFILES_ACTIVE=docker
       - DB_URL=jdbc:postgresql://postgres:5432/userDB
       - DB_USERNAME=postgres
