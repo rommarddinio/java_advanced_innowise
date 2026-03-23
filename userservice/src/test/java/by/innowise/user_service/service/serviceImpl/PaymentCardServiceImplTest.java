@@ -6,6 +6,7 @@ import by.innowise.user_service.entity.PaymentCard;
 import by.innowise.user_service.entity.User;
 import by.innowise.user_service.exception.CardLimitException;
 import by.innowise.user_service.exception.CardNotFoundException;
+import by.innowise.user_service.exception.UnaccessibleCardException;
 import by.innowise.user_service.exception.UserNotFoundException;
 import by.innowise.user_service.repository.PaymentCardRepository;
 import by.innowise.user_service.repository.UserRepository;
@@ -223,6 +224,53 @@ class PaymentCardServiceImplTest {
         verify(paymentCardRepository).save(paymentCard);
         verifyNoInteractions(paymentCardMapper);
 
+    }
+
+    @Test
+    void updateSelfPaymentCard_ShouldReturnUpdatedPaymentCardDto_WhenSuccessful() {
+
+        user.setId(1L);
+        paymentCardDto.setNumber("1111 1111 1111 1111");
+        paymentCardDto.setUserId(10L);
+        paymentCard.setNumber("0000 0000 0000 0000");
+        paymentCard.setUser(user);
+
+        PaymentCard updatedPaymentCard = new PaymentCard();
+        updatedPaymentCard.setId(10L);
+        updatedPaymentCard.setNumber("1111 1111 1111 1111");
+        updatedPaymentCard.setUser(user);
+        PaymentCardDto updatedPaymentCardDto = new PaymentCardDto();
+        updatedPaymentCardDto.setNumber("1111 1111 1111 1111");
+        updatedPaymentCardDto.setUserId(10L);
+
+        when(paymentCardRepository.findById(1L)).thenReturn(Optional.of(paymentCard));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(paymentCardRepository.save(paymentCard)).thenReturn(updatedPaymentCard);
+        when(paymentCardMapper.toPaymentCardDto(updatedPaymentCard)).thenReturn(updatedPaymentCardDto);
+
+        PaymentCardDto result = paymentCardService.updateSelfPaymentCard(1L, paymentCardDto, 1L);
+
+        assertNotNull(result);
+        assertEquals(updatedPaymentCard.getNumber(), result.getNumber());
+        assertEquals(10L, result.getUserId());
+
+        verify(paymentCardRepository).findById(1L);
+        verify(userRepository).findById(10L);
+        verify(paymentCardRepository).save(paymentCard);
+        verify(paymentCardMapper).toPaymentCardDto(updatedPaymentCard);
+    }
+
+    @Test
+    void updateSelfPaymentCard_ShouldThrowException_WhenNotFound() {
+
+        when(paymentCardRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(CardNotFoundException.class, () ->
+                paymentCardService.updateSelfPaymentCard(99L, paymentCardDto, user.getId()));
+
+        verify(paymentCardRepository).findById(99L);
+        verifyNoInteractions(userRepository);
+        verifyNoInteractions(paymentCardMapper);
     }
 
 
