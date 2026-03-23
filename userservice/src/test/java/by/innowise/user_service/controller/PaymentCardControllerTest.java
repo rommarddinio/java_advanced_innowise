@@ -297,4 +297,31 @@ class PaymentCardControllerTest{
         assertEquals(0, paymentCardRepository.count());
 
     }
+
+    @Test
+    void deactivatePaymentCard_ShouldTReturn401_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/deactivate")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void activatePaymentCard_ShouldTReturn401_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/activate")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void deletePaymentCard_ShouldTReturn401_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(delete("/cards/{id}", paymentCard.getId())
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
 }
