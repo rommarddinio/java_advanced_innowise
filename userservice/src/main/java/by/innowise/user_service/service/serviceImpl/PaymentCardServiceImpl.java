@@ -55,7 +55,7 @@ public class PaymentCardServiceImpl implements PaymentCardService{
         PaymentCard paymentCard = paymentCardRepository.findById(id)
                 .orElseThrow(CardNotFoundException::new);
 
-        return getPaymentCard(id, paymentCardDto, paymentCard);
+        return getPaymentCard(paymentCardDto, paymentCard);
     }
 
     @Caching(evict = {
@@ -69,10 +69,10 @@ public class PaymentCardServiceImpl implements PaymentCardService{
         if (!paymentCard.getUser().getId().equals(userId)) {
             throw new UnaccessibleCardException();
         }
-        return getPaymentCard(id, paymentCardDto, paymentCard);
+        return getPaymentCard(paymentCardDto, paymentCard);
     }
 
-    private PaymentCardDto getPaymentCard(Long id, PaymentCardDto paymentCardDto, PaymentCard paymentCard) {
+    private PaymentCardDto getPaymentCard(PaymentCardDto paymentCardDto, PaymentCard paymentCard) {
         paymentCard.setNumber(paymentCardDto.getNumber());
         paymentCard.setHolder(paymentCardDto.getHolder());
         paymentCard.setExpirationDate(paymentCardDto.getExpirationDate());
