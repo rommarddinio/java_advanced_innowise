@@ -273,6 +273,23 @@ class PaymentCardServiceImplTest {
         verifyNoInteractions(paymentCardMapper);
     }
 
+    @Test
+    void updateSelfPaymentCard_ShouldThrowException_WhenNoAccess() {
+
+        User user = new User();
+        user.setId(1L);
+
+        paymentCard.setUser(user);
+
+        when(paymentCardRepository.findById(1L)).thenReturn(Optional.of(paymentCard));
+
+        assertThrows(UnaccessibleCardException.class, () ->
+                paymentCardService.updateSelfPaymentCard(1L, paymentCardDto, 2L));
+
+        verify(paymentCardRepository).findById(1L);
+        verifyNoInteractions(userRepository);
+        verifyNoInteractions(paymentCardMapper);
+    }
 
     @Test
     void getPaymentCards_ShouldReturnPageWithoutFilters() {
