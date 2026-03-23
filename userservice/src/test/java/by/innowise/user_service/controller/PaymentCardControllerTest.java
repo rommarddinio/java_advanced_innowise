@@ -188,6 +188,25 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void updatePaymentCard_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(put("/cards/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updatePaymentCard_ShouldReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(put("/cards/1")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void createPaymentCard_ShouldReturn404_WhenUserNotFound() throws Exception {
 
         dto.setUserId(999L);
@@ -198,6 +217,36 @@ class PaymentCardControllerTest{
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void findBySelfId_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
+
+        mockMvc.perform(get("/cards/byUser/me")
+                        .with(user(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].number").value(paymentCard.getNumber()))
+                .andExpect(jsonPath("$[0].holder").value(paymentCard.getHolder()));
+
+    }
+
+    @Test
+    void findBySelfId_ShouldReturn404_WhenUserNotFound() throws Exception {
+
+        user.setUserId(99L);
+        mockMvc.perform(get("/cards/byUser/me")
+                        .with(user(user)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void findBySelfId_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(get("/cards/byUser/me"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
 
     @Test
     void findById_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
@@ -232,11 +281,44 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void findByUserId_ShouldReturn401_WhenNoAuthentication() throws Exception{
+
+        mockMvc.perform(get("/cards/byUser/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void findByUserId_ShouldReturn403_WhenNoAccess() throws Exception{
+
+        mockMvc.perform(get("/cards/byUser/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
     void findById_ShouldReturn404_WhenNotFound() throws Exception {
 
         mockMvc.perform(get("/cards/99")
                         .with(user(admin)))
                 .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void findById_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(get("/cards/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void findById_ShouldReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(get("/cards/1")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
 
     }
 
