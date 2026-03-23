@@ -144,6 +144,29 @@ class UserControllerTest {
     }
 
     @Test
+    void updateSelf_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
+        mockMvc.perform(put("/users/me", testUser.getId())
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Maksim"))
+                .andExpect(jsonPath("$.email").value("maksimsidorcuk1@gmail.com"));
+
+    }
+
+    @Test
+    void updateSelf_ShouldReturn404_WhenNotFound() throws Exception {
+        user.setUserId(99L);
+        mockMvc.perform(put("/users/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
     void findById_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
 
         mockMvc.perform(get("/users/{id}", testUser.getId())
@@ -197,6 +220,16 @@ class UserControllerTest {
         mockMvc.perform(get("/users/me")
                         .with(user(user)))
                 .andExpect(status().isOk());
+
+    }
+
+
+    @Test
+    void findBySelfId_ShouldReturn404_WhenNotFound() throws Exception {
+        user.setUserId(99L);
+        mockMvc.perform(get("/users/me")
+                        .with(user(user)))
+                .andExpect(status().isNotFound());
 
     }
 
