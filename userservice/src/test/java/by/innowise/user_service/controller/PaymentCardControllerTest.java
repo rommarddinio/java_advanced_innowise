@@ -254,6 +254,25 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void getPaymentCards_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(get("/cards")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getPaymentCards_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(get("/cards")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void activatePaymentCard_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
         mockMvc.perform(patch("/cards/{id}/activate", paymentCard.getId())
@@ -299,7 +318,15 @@ class PaymentCardControllerTest{
     }
 
     @Test
-    void deactivatePaymentCard_ShouldTReturn401_WhenNoAccess() throws Exception {
+    void deactivatePaymentCard_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/deactivate"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void deactivatePaymentCard_ShouldTReturn403_WhenNoAccess() throws Exception {
 
         mockMvc.perform(patch("/cards/1/deactivate")
                         .with(user(user)))
@@ -308,7 +335,7 @@ class PaymentCardControllerTest{
     }
 
     @Test
-    void activatePaymentCard_ShouldTReturn401_WhenNoAccess() throws Exception {
+    void activatePaymentCard_ShouldTReturn403_WhenNoAccess() throws Exception {
 
         mockMvc.perform(patch("/cards/1/activate")
                         .with(user(user)))
@@ -317,11 +344,27 @@ class PaymentCardControllerTest{
     }
 
     @Test
-    void deletePaymentCard_ShouldTReturn401_WhenNoAccess() throws Exception {
+    void activatePaymentCard_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/activate"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void deletePaymentCard_ShouldTReturn403_WhenNoAccess() throws Exception {
 
         mockMvc.perform(delete("/cards/{id}", paymentCard.getId())
                         .with(user(user)))
                 .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void deletePaymentCard_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(delete("/cards/{id}", paymentCard.getId()))
+                .andExpect(status().isUnauthorized());
 
     }
 }
