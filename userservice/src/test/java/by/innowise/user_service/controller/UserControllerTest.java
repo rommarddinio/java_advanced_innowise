@@ -144,6 +144,27 @@ class UserControllerTest {
     }
 
     @Test
+    void updateUser_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(put("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void updateUser_ShouldReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(put("/users/1")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
     void updateSelf_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
         mockMvc.perform(put("/users/me", testUser.getId())
                         .with(user(user))
@@ -163,6 +184,16 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void updateSelf_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(put("/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
 
     }
 
@@ -187,6 +218,23 @@ class UserControllerTest {
     }
 
     @Test
+    void findById_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(get("/users/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void findById_ShouldReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(get("/users/1")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
     void getUsers_ShouldReturnPaymentCardPage_WhenSuccessful() throws Exception {
 
         mockMvc.perform(get("/users")
@@ -196,6 +244,51 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].email").value("romansidorcuk1@gmail.com"));
+
+    }
+
+    @Test
+    void getUsers_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(get("/users")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getUsers_ShouldReturn401_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(get("/users")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void findSelfById_ShouldReturnCurrentUser() throws Exception {
+
+        mockMvc.perform(get("/users/me")
+                        .with(user(user)))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void findBySelfId_ShouldReturn404_WhenNotFound() throws Exception {
+        user.setUserId(99L);
+        mockMvc.perform(get("/users/me")
+                        .with(user(user)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void findBySelfId_ShouldReturn401_WhenNoAuthentication() throws Exception {
+        user.setUserId(99L);
+        mockMvc.perform(get("/users/me"))
+                .andExpect(status().isUnauthorized());
 
     }
 
@@ -215,25 +308,6 @@ class UserControllerTest {
     }
 
     @Test
-    void findSelfById_ShouldReturnCurrentUser() throws Exception {
-
-        mockMvc.perform(get("/users/me")
-                        .with(user(user)))
-                .andExpect(status().isOk());
-
-    }
-
-
-    @Test
-    void findBySelfId_ShouldReturn404_WhenNotFound() throws Exception {
-        user.setUserId(99L);
-        mockMvc.perform(get("/users/me")
-                        .with(user(user)))
-                .andExpect(status().isNotFound());
-
-    }
-
-    @Test
     void activateUser_ShouldReturn404_WhenNotFound() throws Exception {
 
         mockMvc.perform(patch("/users/99/activate")
@@ -242,6 +316,23 @@ class UserControllerTest {
                                 .role("ROLE_ADMIN")
                                 .build())))
                 .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void activateUser_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(patch("/users/1/activate")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void activateUser_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(patch("/users/1/activate"))
+                .andExpect(status().isUnauthorized());
 
     }
 
@@ -270,6 +361,23 @@ class UserControllerTest {
     }
 
     @Test
+    void deactivateUser_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(patch("/users/1/deactivate"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void deactivateUser_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(patch("/users/1/deactivate")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
     void deleteUser_ShouldRemoveFromDatabase() throws Exception {
 
         mockMvc.perform(delete("/users/{id}", testUser.getId())
@@ -277,6 +385,23 @@ class UserControllerTest {
                 .andExpect(status().isNoContent());
 
         assertEquals(0, userRepository.count());
+
+    }
+
+    @Test
+    void deleteUser_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(delete("/users/{id}", testUser.getId())
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void deleteUser_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(delete("/users/{id}", testUser.getId()))
+                .andExpect(status().isUnauthorized());
 
     }
 
