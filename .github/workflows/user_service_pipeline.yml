@@ -34,10 +34,6 @@ jobs:
         run: mvn clean package -DskipTests -B
         working-directory: userservice
 
-      - name: Copy Maven dependencies
-        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency -B
-        working-directory: userservice
-
       - name: Run Tests
         run: mvn test jacoco:report -B
         working-directory: userservice

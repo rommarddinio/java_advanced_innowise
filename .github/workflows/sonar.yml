@@ -33,6 +33,14 @@ jobs:
         run: mvn clean test jacoco:report -B
         working-directory: userservice
 
+      - name: Copy dependencies for Authentication Service
+        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency -B
+        working-directory: authenticationservice
+
+      - name: Copy dependencies for User Service
+        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency -B
+        working-directory: userservice
+
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         with:
