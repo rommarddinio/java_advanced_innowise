@@ -1,4 +1,4 @@
-name: authentication_service_pipeline
+name: user_service_pipeline
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
 
     env:
       SPRING_PROFILES_ACTIVE: docker
-      DOCKER_IMAGE_NAME: authentication_service
+      DOCKER_IMAGE_NAME: user_service
       DOCKER_REGISTRY: docker.io
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -32,15 +32,15 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package -DskipTests -B
-        working-directory: authenticationservice
+        working-directory: userservice
 
       - name: Copy Maven dependencies
         run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency -B
-        working-directory: authenticationservice
+        working-directory: userservice
 
       - name: Run Tests
         run: mvn test jacoco:report -B
-        working-directory: authenticationservice
+        working-directory: userservice
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -50,8 +50,8 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest .
-        working-directory: authenticationservice
+        working-directory: userservice
 
       - name: Push Docker image
         run: docker push $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest
-        working-directory: authenticationservice
+        working-directory: userservice
