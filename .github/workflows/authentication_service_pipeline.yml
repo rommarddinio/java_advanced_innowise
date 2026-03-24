@@ -39,7 +39,7 @@ jobs:
         working-directory: authenticationservice
 
       - name: Run Tests
-        run: mvn test -B
+        run: mvn test jacoco:report -B
         working-directory: authenticationservice
 
       - name: SonarQube Scan
@@ -56,6 +56,7 @@ jobs:
             -Dsonar.java.libraries=authenticationservice/target/dependency/**/*.jar
             -Dsonar.java.test.binaries=authenticationservice/target/test-classes
             -Dsonar.java.test.libraries=authenticationservice/target/dependency/**/*.jar
+            -Dsonar.coverage.jacoco.xmlReportPaths=userservice/target/site/jacoco/jacoco.xml
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
