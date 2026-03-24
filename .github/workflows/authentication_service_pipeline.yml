@@ -1,4 +1,4 @@
-name: user_service_pipeline
+name: authentication_service_pipeline
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
 
     env:
       SPRING_PROFILES_ACTIVE: docker
-      DOCKER_IMAGE_NAME: user_service
+      DOCKER_IMAGE_NAME: authentication_service
       DOCKER_REGISTRY: docker.io
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -32,15 +32,15 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package -DskipTests -B
-        working-directory: userservice
+        working-directory: authenticationservice
 
       - name: Copy Maven dependencies
         run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency -B
-        working-directory: userservice
+        working-directory: authenticationservice
 
       - name: Run Tests
-        run: mvn test jacoco:report -B
-        working-directory: userservice
+        run: mvn test -B
+        working-directory: authenticationservice
 
       - name: SonarQube Scan
         uses: sonarsource/sonarcloud-github-action@v2
@@ -50,13 +50,12 @@ jobs:
             -Dsonar.organization=rommarddinio
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.sources=userservice/src/main/java,userservice/target/generated-sources/annotations
-            -Dsonar.tests=userservice/src/test/java
-            -Dsonar.java.binaries=userservice/target/classes
-            -Dsonar.java.libraries=userservice/target/dependency/**/*.jar
-            -Dsonar.java.test.binaries=userservice/target/test-classes
-            -Dsonar.java.test.libraries=userservice/target/dependency/**/*.jar
-            -Dsonar.coverage.jacoco.xmlReportPaths=userservice/target/site/jacoco/jacoco.xml
+            -Dsonar.sources=authenticationservice/src/main/java,authenticationservice/target/generated-sources/annotations
+            -Dsonar.tests=authenticationservice/src/test/java
+            -Dsonar.java.binaries=authenticationservice/target/classes
+            -Dsonar.java.libraries=authenticationservice/target/dependency/**/*.jar
+            -Dsonar.java.test.binaries=authenticationservice/target/test-classes
+            -Dsonar.java.test.libraries=authenticationservice/target/dependency/**/*.jar
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -66,8 +65,8 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest .
-        working-directory: userservice
+        working-directory: authenticationservice
 
       - name: Push Docker image
         run: docker push $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest
-        working-directory: userservice
+        working-directory: authenticationservice
