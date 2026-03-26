@@ -83,8 +83,10 @@ class TokenFilterTest {
         when(request.getMethod()).thenReturn("GET");
         when(request.getRequestURI()).thenReturn("/other");
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+
         when(tokenService.getUserId(token)).thenReturn(1L);
         when(tokenService.getRole(token)).thenReturn("USER");
+        when(tokenService.getTokenType(token)).thenReturn("ACCESS");
 
         tokenFilter.doFilterInternal(request, response, filterChain);
 
@@ -119,7 +121,9 @@ class TokenFilterTest {
         when(request.getMethod()).thenReturn("GET");
         when(request.getRequestURI()).thenReturn("/other");
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+
         when(tokenService.getUserId(token)).thenThrow(SignatureException.class);
+        when(tokenService.getTokenType(token)).thenReturn("ACCESS");
 
         tokenFilter.doFilterInternal(request, response, filterChain);
 

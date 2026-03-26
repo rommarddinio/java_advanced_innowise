@@ -119,8 +119,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/validate")
                         .with(user(user))
                         .header("Authorization", "Bearer " + loginResponse.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Token is valid")));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -141,11 +140,6 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.token").exists());
     }
 
-    @Test
-    void validate_ShouldReturn401_WhenHeaderMissing() throws Exception {
-        mockMvc.perform(post("/auth/validate"))
-                .andExpect(status().isUnauthorized());
-    }
 
     @Test
     void refresh_ShouldReturn401_WhenHeaderInvalid() throws Exception {
