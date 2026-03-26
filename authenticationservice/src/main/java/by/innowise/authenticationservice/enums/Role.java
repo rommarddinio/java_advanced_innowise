@@ -1,4 +1,4 @@
-package by.innowise.authenticationservice.role;
+package by.innowise.authenticationservice.enums;
 
 public enum Role {
     ROLE_USER,
