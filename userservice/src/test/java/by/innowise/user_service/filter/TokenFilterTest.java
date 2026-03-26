@@ -130,4 +130,24 @@ class TokenFilterTest {
         verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         assertTrue(responseWriter.toString().contains("Invalid token"));
     }
+
+    @Test
+    void shouldReturn400_whenTokenTypeInvalid() throws Exception {
+        String token = "refresh-token";
+
+        when(request.getMethod()).thenReturn("GET");
+        when(request.getRequestURI()).thenReturn("/other");
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+
+        when(tokenService.getUserId(token)).thenReturn(1L);
+        when(tokenService.getRole(token)).thenReturn("USER");
+        when(tokenService.getTokenType(token)).thenReturn("REFRESH");
+
+        StringWriter responseWriter = new StringWriter();
+        when(response.getWriter()).thenReturn(new PrintWriter(responseWriter));
+
+        tokenFilter.doFilterInternal(request, response, filterChain);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    }
 }

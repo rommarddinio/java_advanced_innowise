@@ -7,6 +7,7 @@ import by.innowise.authenticationservice.dto.LoginResponse;
 import by.innowise.authenticationservice.dto.TokenPayload;
 import by.innowise.authenticationservice.entity.Credentials;
 import by.innowise.authenticationservice.exception.EmptyTokenException;
+import by.innowise.authenticationservice.exception.InvalidTokenTypeException;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -145,5 +146,30 @@ class AuthServiceTest {
     @Test
     void refresh_ShouldThrowEmptyTokenException_WhenHeaderInvalid() {
         assertThrows(EmptyTokenException.class, () -> authService.refresh(null));
+    }
+
+    @Test
+    void refresh_ShouldThrowInvalidTokenTypeException_WhenTokenTypeIsNotRefresh() {
+        String token = "access-token";
+
+        Claims claims = mock(Claims.class);
+        when(claims.get("userId", Long.class)).thenReturn(1L);
+        when(claims.get("role", String.class)).thenReturn("ROLE_USER");
+        when(claims.get("tokenType", String.class)).thenReturn("ACCESS");
+        when(claims.getExpiration()).thenReturn(new Date(System.currentTimeMillis() + 100000));
+        when(claims.getIssuedAt()).thenReturn(new Date());
+
+        when(tokenService.getClaimsFromToken(token)).thenReturn(claims);
+
+        when(tokenService.getTokenType(token)).thenReturn("ACCESS");
+
+        InvalidTokenTypeException exception = assertThrows(
+                InvalidTokenTypeException.class,
+                () -> authService.refresh("Bearer " + token)
+        );
+
+        assertNotNull(exception.getMessage());
+
+        verify(tokenService, never()).generateAccessToken(anyLong(), anyString());
     }
 }
