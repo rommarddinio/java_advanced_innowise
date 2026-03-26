@@ -1,6 +1,7 @@
 package by.innowise.user_service.filter;
 
 import by.innowise.user_service.dto.MyUserDetails;
+import by.innowise.user_service.exception.InvalidTokenTypeException;
 import by.innowise.user_service.service.TokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -10,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -63,6 +65,10 @@ public class TokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
 
+            if (!tokenService.getTokenType(token).equals("ACCESS")) {
+                throw new InvalidTokenTypeException();
+            }
+
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
@@ -71,6 +77,9 @@ public class TokenFilter extends OncePerRequestFilter {
         } catch (SignatureException | MalformedJwtException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Invalid token");
+        } catch (InvalidTokenTypeException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(e.getMessage());
         }
     }
 

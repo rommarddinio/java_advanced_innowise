@@ -27,5 +27,9 @@ public class TokenService {
         return getClaimsFromToken(token).get("role", String.class);
     }
 
+    public String getTokenType(String token) {
+        return getClaimsFromToken(token).get("tokenType", String.class);
+    }
+
 }
 
