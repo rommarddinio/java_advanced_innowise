@@ -3,7 +3,9 @@ package by.innowise.authenticationservice.controller;
 import by.innowise.authenticationservice.dto.GeneralRequest;
 import by.innowise.authenticationservice.dto.GeneralResponse;
 import by.innowise.authenticationservice.dto.LoginResponse;
+import by.innowise.authenticationservice.dto.TokenPayload;
 import by.innowise.authenticationservice.service.AuthService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +29,8 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<String> validate(@RequestHeader("Authorization") String header) {
-        authService.validate(header);
-        return new ResponseEntity<>("Token is valid", HttpStatus.OK);
+    public ResponseEntity<TokenPayload> validate(@RequestHeader("Authorization") String header) {
+        return new ResponseEntity<>(authService.validate(header), HttpStatus.OK);
     }
 
     @PostMapping("/refresh")

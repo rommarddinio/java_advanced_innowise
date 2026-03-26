@@ -32,8 +32,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling( exceptionHandlingConfigurer ->

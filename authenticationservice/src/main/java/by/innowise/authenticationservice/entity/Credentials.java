@@ -1,6 +1,6 @@
 package by.innowise.authenticationservice.entity;
 
-import by.innowise.authenticationservice.role.Role;
+import by.innowise.authenticationservice.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

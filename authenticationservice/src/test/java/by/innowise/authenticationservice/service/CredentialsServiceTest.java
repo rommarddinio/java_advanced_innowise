@@ -3,7 +3,7 @@ package by.innowise.authenticationservice.service;
 import by.innowise.authenticationservice.details.MyUserDetails;
 import by.innowise.authenticationservice.entity.Credentials;
 import by.innowise.authenticationservice.repository.CredentialsRepository;
-import by.innowise.authenticationservice.role.Role;
+import by.innowise.authenticationservice.enums.Role;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

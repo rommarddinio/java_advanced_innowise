@@ -4,7 +4,7 @@ import by.innowise.authenticationservice.details.MyUserDetails;
 import by.innowise.authenticationservice.dto.GeneralRequest;
 import by.innowise.authenticationservice.dto.LoginResponse;
 import by.innowise.authenticationservice.entity.Credentials;
-import by.innowise.authenticationservice.role.Role;
+import by.innowise.authenticationservice.enums.Role;
 import by.innowise.authenticationservice.repository.CredentialsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
