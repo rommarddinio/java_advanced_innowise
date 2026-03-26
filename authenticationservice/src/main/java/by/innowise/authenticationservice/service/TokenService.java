@@ -1,5 +1,6 @@
 package by.innowise.authenticationservice.service;
 
+import by.innowise.authenticationservice.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,20 +25,21 @@ public class TokenService {
     private Duration refreshLifetime;
 
     public String generateAccessToken(Long userId, String role) {
-        return getToken(userId, role, accessLifetime);
+        return getToken(userId, role, accessLifetime, TokenType.ACCESS);
     }
 
     public String generateRefreshToken(Long userId, String role) {
-        return getToken(userId, role, refreshLifetime);
+        return getToken(userId, role, refreshLifetime, TokenType.REFRESH);
     }
 
-    private String getToken(Long userId, String role, Duration refreshLifetime) {
+    private String getToken(Long userId, String role, Duration lifetime, TokenType type) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
+        claims.put("tokenType", type.name());
 
         Date issuedDate = new Date();
-        Date expiriedDate = new Date(issuedDate.getTime() + refreshLifetime.toMillis());
+        Date expiriedDate = new Date(issuedDate.getTime() + lifetime.toMillis());
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -62,4 +64,7 @@ public class TokenService {
         return getClaimsFromToken(token).get("role", String.class);
     }
 
+    public String getTokenType(String token) {
+        return getClaimsFromToken(token).get("tokenType", String.class);
+    }
 }
