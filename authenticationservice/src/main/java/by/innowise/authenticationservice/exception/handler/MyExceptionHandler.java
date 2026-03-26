@@ -1,12 +1,13 @@
 package by.innowise.authenticationservice.exception.handler;
 
 import by.innowise.authenticationservice.exception.EmptyTokenException;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
+import by.innowise.authenticationservice.exception.InvalidTokenTypeException;
+import io.jsonwebtoken.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,4 +56,30 @@ public class MyExceptionHandler {
     public ResponseEntity<String> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
         return new ResponseEntity<>("Necessary headers are missing", HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InvalidTokenTypeException.class)
+    public ResponseEntity<String> handleInvalidTokenTypeException(InvalidTokenTypeException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException e) {
+        return new ResponseEntity<>("Access denied: insufficient permissions", HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<String> handleGenericJwtException(JwtException e) {
+        return new ResponseEntity<>("Invalid token", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    public ResponseEntity<String> handleInsufficientAuthenticationException(InsufficientAuthenticationException e) {
+        return new ResponseEntity<>("Insufficient authentication", HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UnsupportedJwtException.class)
+    public ResponseEntity<String> handleUnsupportedJwtException(UnsupportedJwtException e) {
+        return new ResponseEntity<>("Unsupported token", HttpStatus.BAD_REQUEST);
+    }
+
 }

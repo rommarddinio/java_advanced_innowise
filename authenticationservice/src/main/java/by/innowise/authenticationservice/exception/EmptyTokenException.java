@@ -14,5 +14,4 @@ public class EmptyTokenException extends RuntimeException {
         super(message, cause);
     }
 
-
 }
