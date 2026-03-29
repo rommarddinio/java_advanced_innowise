@@ -1,14 +1,14 @@
 package by.innowise.authenticationservice.service;
 
 import by.innowise.authenticationservice.details.MyUserDetails;
-import by.innowise.authenticationservice.dto.GeneralRequest;
-import by.innowise.authenticationservice.dto.GeneralResponse;
-import by.innowise.authenticationservice.dto.LoginResponse;
-import by.innowise.authenticationservice.dto.TokenPayload;
+import by.innowise.authenticationservice.dto.*;
 import by.innowise.authenticationservice.entity.Credentials;
 import by.innowise.authenticationservice.exception.EmptyTokenException;
 import by.innowise.authenticationservice.exception.InvalidTokenTypeException;
+import by.innowise.authenticationservice.service.serviceImpl.AuthServiceImpl;
+import by.innowise.authenticationservice.service.serviceImpl.CredentialsService;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +24,9 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+class AuthServiceImplTest {
 
     @Mock
     private CredentialsService credentialsService;
@@ -40,17 +41,21 @@ class AuthServiceTest {
     private BCryptPasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
-    private GeneralRequest generalRequest;
+    private RegisterRequest registerRequest;
+    private LoginRequest loginRequest;
 
     @BeforeEach
     void setUp() {
-        generalRequest = new GeneralRequest();
-        generalRequest.setLogin("testuser");
-        generalRequest.setPassword("password");
-        generalRequest.setUserId(1L);
-        generalRequest.setRole("ROLE_USER");
+        registerRequest = new RegisterRequest();
+        registerRequest.setLogin("testuser");
+        registerRequest.setPassword("password");
+        registerRequest.setUserId(1L);
+
+        loginRequest = new LoginRequest();
+        loginRequest.setLogin("testuser");
+        loginRequest.setPassword("password");
     }
 
     @Test
@@ -65,7 +70,7 @@ class AuthServiceTest {
         when(tokenService.generateAccessToken(1L, "ROLE_USER")).thenReturn("access-token");
         when(tokenService.generateRefreshToken(1L, "ROLE_USER")).thenReturn("refresh-token");
 
-        LoginResponse response = authService.login(generalRequest);
+        LoginResponse response = authService.login(loginRequest);
 
         assertEquals("access-token", response.getAccessToken());
         assertEquals("refresh-token", response.getRefreshToken());
@@ -77,7 +82,7 @@ class AuthServiceTest {
         when(passwordEncoder.encode("password")).thenReturn("hashed-password");
         when(tokenService.generateAccessToken(1L, "ROLE_USER")).thenReturn("access-token");
 
-        GeneralResponse response = authService.register(generalRequest);
+        GeneralResponse response = authService.register(registerRequest);
 
         assertEquals("access-token", response.getToken());
         verify(credentialsService).saveCredentials(any(Credentials.class));
@@ -120,14 +125,6 @@ class AuthServiceTest {
     void refresh_ShouldReturnNewAccessToken_WhenRefreshTokenValid() {
         String refreshToken = "valid-refresh-token";
 
-        Claims claims = mock(Claims.class);
-        when(claims.get("userId", Long.class)).thenReturn(1L);
-        when(claims.get("role", String.class)).thenReturn("ROLE_USER");
-        when(claims.get("tokenType", String.class)).thenReturn("REFRESH");
-        when(claims.getExpiration()).thenReturn(new Date(System.currentTimeMillis() + 300000));
-        when(claims.getIssuedAt()).thenReturn(new Date(System.currentTimeMillis()));
-
-        when(tokenService.getClaimsFromToken(refreshToken)).thenReturn(claims);
         when(tokenService.getTokenType(refreshToken)).thenReturn("REFRESH");
         when(tokenService.getUserId(refreshToken)).thenReturn(1L);
         when(tokenService.getRole(refreshToken)).thenReturn("ROLE_USER");
@@ -136,7 +133,6 @@ class AuthServiceTest {
         GeneralResponse response = authService.refresh("Bearer " + refreshToken);
 
         assertEquals("new-access-token", response.getToken());
-        verify(tokenService).getClaimsFromToken(refreshToken);
         verify(tokenService).getTokenType(refreshToken);
         verify(tokenService).getUserId(refreshToken);
         verify(tokenService).getRole(refreshToken);
@@ -151,15 +147,6 @@ class AuthServiceTest {
     @Test
     void refresh_ShouldThrowInvalidTokenTypeException_WhenTokenTypeIsNotRefresh() {
         String token = "access-token";
-
-        Claims claims = mock(Claims.class);
-        when(claims.get("userId", Long.class)).thenReturn(1L);
-        when(claims.get("role", String.class)).thenReturn("ROLE_USER");
-        when(claims.get("tokenType", String.class)).thenReturn("ACCESS");
-        when(claims.getExpiration()).thenReturn(new Date(System.currentTimeMillis() + 100000));
-        when(claims.getIssuedAt()).thenReturn(new Date());
-
-        when(tokenService.getClaimsFromToken(token)).thenReturn(claims);
 
         when(tokenService.getTokenType(token)).thenReturn("ACCESS");
 

@@ -1,5 +1,6 @@
 package by.innowise.authenticationservice.service;
 
+import by.innowise.authenticationservice.service.serviceImpl.TokenServiceImpl;
 import io.jsonwebtoken.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,7 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TokenServiceTest {
+class TokenServiceImplTest {
 
     private TokenService tokenService;
 
@@ -23,7 +24,7 @@ class TokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        tokenService = new TokenService();
+        tokenService = new TokenServiceImpl();
 
         ReflectionTestUtils.setField(tokenService, "secret", SECRET);
         ReflectionTestUtils.setField(tokenService, "accessLifetime", ACCESS_LIFETIME);

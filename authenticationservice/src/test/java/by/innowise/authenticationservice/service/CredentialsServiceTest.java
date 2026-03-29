@@ -4,6 +4,7 @@ import by.innowise.authenticationservice.details.MyUserDetails;
 import by.innowise.authenticationservice.entity.Credentials;
 import by.innowise.authenticationservice.repository.CredentialsRepository;
 import by.innowise.authenticationservice.enums.Role;
+import by.innowise.authenticationservice.service.serviceImpl.CredentialsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

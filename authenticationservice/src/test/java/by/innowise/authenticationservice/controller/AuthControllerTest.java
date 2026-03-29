@@ -1,7 +1,7 @@
 package by.innowise.authenticationservice.controller;
 
 import by.innowise.authenticationservice.details.MyUserDetails;
-import by.innowise.authenticationservice.dto.GeneralRequest;
+import by.innowise.authenticationservice.dto.RegisterRequest;
 import by.innowise.authenticationservice.dto.LoginResponse;
 import by.innowise.authenticationservice.entity.Credentials;
 import by.innowise.authenticationservice.enums.Role;
@@ -22,7 +22,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -60,7 +59,7 @@ class AuthControllerTest {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    private GeneralRequest request;
+    private RegisterRequest request;
     private MyUserDetails user;
 
     @BeforeEach
@@ -77,11 +76,10 @@ class AuthControllerTest {
         credentials.setRole(Role.ROLE_USER);
         credentialsRepository.save(credentials);
 
-        request = new GeneralRequest();
+        request = new RegisterRequest();
         request.setUserId(1L);
         request.setLogin("testuser");
         request.setPassword("password");
-        request.setRole(Role.ROLE_USER.name());
     }
 
     @Test
