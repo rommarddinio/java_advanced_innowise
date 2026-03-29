@@ -1,41 +1,43 @@
 package by.innowise.authenticationservice.controller;
 
-import by.innowise.authenticationservice.dto.GeneralRequest;
-import by.innowise.authenticationservice.dto.GeneralResponse;
-import by.innowise.authenticationservice.dto.LoginResponse;
-import by.innowise.authenticationservice.dto.TokenPayload;
-import by.innowise.authenticationservice.service.AuthService;
-import io.jsonwebtoken.Claims;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import by.innowise.authenticationservice.dto.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-@RequiredArgsConstructor
-@RestController
-@RequestMapping("/auth")
-public class AuthController {
+/**
+ * Controller for authentication operations such as login, registration,
+ * token validation and refresh token.
+ */
+public interface AuthController {
 
-    private final AuthService authService;
+    /**
+     * Authenticates user and returns access and refresh tokens.
+     *
+     * @param request login request containing credentials
+     * @return JWT access and refresh tokens
+     */
+    ResponseEntity<LoginResponse> login(LoginRequest request);
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody GeneralRequest request) {
-        return new ResponseEntity<>(authService.login(request), HttpStatus.OK);
-    }
+    /**
+     * Registers a new user.
+     *
+     * @param request registration data
+     * @return JWT access token
+     */
+    ResponseEntity<GeneralResponse> register(RegisterRequest request);
 
-    @PostMapping("/register")
-    public ResponseEntity<GeneralResponse> register(@RequestBody GeneralRequest request) {
-        return new ResponseEntity<>(authService.register(request), HttpStatus.OK);
-    }
+    /**
+     * Validate token.
+     *
+     * @param header Authorization header with token to validate
+     * @return token payload
+     */
+    ResponseEntity<TokenPayload> validate(String header);
 
-    @PostMapping("/validate")
-    public ResponseEntity<TokenPayload> validate(@RequestHeader("Authorization") String header) {
-        return new ResponseEntity<>(authService.validate(header), HttpStatus.OK);
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<GeneralResponse> refresh(@RequestHeader("Authorization") String header) {
-        return new ResponseEntity<>(authService.refresh(header), HttpStatus.OK);
-    }
-
+    /**
+     * Refreshes access token using refresh token.
+     *
+     * @param header Authorization header with refresh token
+     * @return new access token
+     */
+    ResponseEntity<GeneralResponse> refresh(String header);
 }
