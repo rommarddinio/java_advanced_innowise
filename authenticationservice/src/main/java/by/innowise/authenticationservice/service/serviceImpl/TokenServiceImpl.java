@@ -1,6 +1,7 @@
-package by.innowise.authenticationservice.service;
+package by.innowise.authenticationservice.service.serviceImpl;
 
 import by.innowise.authenticationservice.enums.TokenType;
+import by.innowise.authenticationservice.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class TokenService {
+public class TokenServiceImpl implements TokenService {
 
     @Value("${jwt.secret}")
     private String secret;

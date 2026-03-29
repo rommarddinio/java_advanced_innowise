@@ -1,4 +1,4 @@
-package by.innowise.authenticationservice.service;
+package by.innowise.authenticationservice.service.serviceImpl;
 
 import by.innowise.authenticationservice.details.MyUserDetails;
 import by.innowise.authenticationservice.entity.Credentials;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CredentialsService implements UserDetailsService {
+public class CredentialsService implements UserDetailsService{
 
     private final CredentialsRepository credentialsRepository;
 
