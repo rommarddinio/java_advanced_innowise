@@ -1,10 +1,13 @@
 package by.innowise.authenticationservice.configuration;
 
-import by.innowise.authenticationservice.service.CredentialsService;
+import by.innowise.authenticationservice.entity.Credentials;
+import by.innowise.authenticationservice.enums.Role;
+import by.innowise.authenticationservice.repository.CredentialsRepository;
+import by.innowise.authenticationservice.service.serviceImpl.CredentialsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -60,6 +63,22 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public CommandLineRunner createAdmin(CredentialsRepository credentialsRepository) {
+        return args -> {
+            if (credentialsRepository.findByLogin("admin").isEmpty()) {
+                Credentials admin = new Credentials();
+                admin.setUserId(0L);
+                admin.setLogin("admin");
+                admin.setPassword(passwordEncoder().encode("admin"));
+                admin.setRole(Role.ROLE_ADMIN);
+
+                credentialsRepository.save(admin);
+            }
+        };
+
     }
 
 }
