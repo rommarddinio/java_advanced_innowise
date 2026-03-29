@@ -65,20 +65,4 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Bean
-    public CommandLineRunner createAdmin(CredentialsRepository credentialsRepository) {
-        return args -> {
-            if (credentialsRepository.findByLogin("admin").isEmpty()) {
-                Credentials admin = new Credentials();
-                admin.setUserId(0L);
-                admin.setLogin("admin");
-                admin.setPassword(passwordEncoder().encode("admin"));
-                admin.setRole(Role.ROLE_ADMIN);
-
-                credentialsRepository.save(admin);
-            }
-        };
-
-    }
-
 }
