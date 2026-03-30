@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changeset/add-indexes-items-table.sql
   - include:
       file: db/changelog/changeset/add-indexes-order-items-table.sql
+  - include:
+      file: db/changelog/changeset/add-deleted-column-in-item-table.sql
