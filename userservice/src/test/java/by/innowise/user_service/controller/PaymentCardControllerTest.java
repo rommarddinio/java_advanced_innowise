@@ -1,5 +1,6 @@
 package by.innowise.user_service.controller;
 
+import by.innowise.user_service.dto.MyUserDetails;
 import by.innowise.user_service.dto.PaymentCardDto;
 import by.innowise.user_service.entity.PaymentCard;
 import by.innowise.user_service.entity.User;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -23,12 +25,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = "JWT_SECRET=testsecret")
 class PaymentCardControllerTest{
 
     @Container
@@ -65,36 +69,41 @@ class PaymentCardControllerTest{
     @Autowired
     private ObjectMapper objectMapper;
 
-    private User user;
+    private User testUser;
     private PaymentCard paymentCard;
     private PaymentCardDto dto;
+    private MyUserDetails user;
+    private MyUserDetails admin;
 
     @BeforeEach
     void setUp() {
         paymentCardRepository.deleteAll();
         userRepository.deleteAll();
 
-        user = new User();
-        user.setName("Roman");
-        user.setSurname("Sidorchuk");
-        user.setBirthDate(LocalDate.of(2006, 2, 28));
-        user.setEmail("romansidorcuk1@gmail.com");
-        user.setActive(true);
-        user = userRepository.save(user);
+        testUser = new User();
+        testUser.setName("Roman");
+        testUser.setSurname("Sidorchuk");
+        testUser.setBirthDate(LocalDate.of(2006, 2, 28));
+        testUser.setEmail("romansidorcuk1@gmail.com");
+        testUser.setActive(true);
+        testUser = userRepository.save(testUser);
+
+        user = new MyUserDetails(testUser.getId(), "ROLE_USER");
+        admin = new MyUserDetails(testUser.getId(), "ROLE_ADMIN");
 
         paymentCard = new PaymentCard();
         paymentCard.setNumber("1111 1111 1111 1111");
         paymentCard.setHolder("RAMAN SIDARCHUK");
         paymentCard.setExpirationDate(LocalDate.of(2030, 12, 31));
         paymentCard.setActive(true);
-        paymentCard.setUser(user);
+        paymentCard.setUser(testUser);
         paymentCard = paymentCardRepository.save(paymentCard);
 
         dto = new PaymentCardDto();
         dto.setNumber("2222 2222 2222 2222");
         dto.setExpirationDate(LocalDate.of(2030, 12, 31));
         dto.setHolder("RAMAN BEBRA");
-        dto.setUserId(user.getId());
+        dto.setUserId(testUser.getId());
         dto.setActive(true);
     }
 
@@ -103,21 +112,10 @@ class PaymentCardControllerTest{
     void createPaymentCard_ShouldReturnSavedPaymentCard_WhenSuccessful() throws Exception {
 
         mockMvc.perform(post("/cards")
+                        .with(user(admin))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.number").value("2222 2222 2222 2222"))
-                .andExpect(jsonPath("$.holder").value("RAMAN BEBRA"));
-
-    }
-
-    @Test
-    void updatePaymentCard_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
-
-        mockMvc.perform(put("/cards/{id}", paymentCard.getId())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.number").value("2222 2222 2222 2222"))
                 .andExpect(jsonPath("$.holder").value("RAMAN BEBRA"));
 
@@ -131,7 +129,7 @@ class PaymentCardControllerTest{
         paymentCard2.setHolder("RAMAN SIDARCHUK");
         paymentCard2.setExpirationDate(LocalDate.of(2030, 12, 31));
         paymentCard2.setActive(true);
-        paymentCard2.setUser(user);
+        paymentCard2.setUser(testUser);
         paymentCardRepository.save(paymentCard2);
 
         PaymentCard paymentCard3 = new PaymentCard();
@@ -139,7 +137,7 @@ class PaymentCardControllerTest{
         paymentCard3.setHolder("RAMAN SIDARCHUK");
         paymentCard3.setExpirationDate(LocalDate.of(2030, 12, 31));
         paymentCard3.setActive(true);
-        paymentCard3.setUser(user);
+        paymentCard3.setUser(testUser);
         paymentCardRepository.save(paymentCard3);
 
         PaymentCard paymentCard4 = new PaymentCard();
@@ -147,7 +145,7 @@ class PaymentCardControllerTest{
         paymentCard4.setHolder("RAMAN SIDARCHUK");
         paymentCard4.setExpirationDate(LocalDate.of(2030, 12, 31));
         paymentCard4.setActive(true);
-        paymentCard4.setUser(user);
+        paymentCard4.setUser(testUser);
         paymentCardRepository.save(paymentCard4);
 
         PaymentCard paymentCard5 = new PaymentCard();
@@ -155,23 +153,15 @@ class PaymentCardControllerTest{
         paymentCard5.setHolder("RAMAN SIDARCHUK");
         paymentCard5.setExpirationDate(LocalDate.of(2030, 12, 31));
         paymentCard5.setActive(true);
-        paymentCard5.setUser(user);
+        paymentCard5.setUser(testUser);
         paymentCardRepository.save(paymentCard5);
 
         mockMvc.perform(post("/cards")
+                        .with(user(admin))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
 
-    }
-
-    @Test
-    void updatePaymentCard_ShouldReturn404_WhenNotFound() throws Exception {
-
-        mockMvc.perform(put("/cards/999")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -180,17 +170,205 @@ class PaymentCardControllerTest{
         dto.setUserId(999L);
 
         mockMvc.perform(post("/cards")
+                        .with(user(admin))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    void createSelfPaymentCard_ShouldReturnSavedPaymentCard_WhenSuccessful() throws Exception {
+
+        mockMvc.perform(post("/cards/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.number").value("2222 2222 2222 2222"))
+                .andExpect(jsonPath("$.holder").value("RAMAN BEBRA"));
+
+    }
+
+    @Test
+    void createSelfPaymentCard_ShouldReturn409_WhenCardLimitReached() throws Exception {
+
+        PaymentCard paymentCard2 = new PaymentCard();
+        paymentCard2.setNumber("1222 2222 2222 2222");
+        paymentCard2.setHolder("RAMAN SIDARCHUK");
+        paymentCard2.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard2.setActive(true);
+        paymentCard2.setUser(testUser);
+        paymentCardRepository.save(paymentCard2);
+
+        PaymentCard paymentCard3 = new PaymentCard();
+        paymentCard3.setNumber("3333 3333 3333 3333");
+        paymentCard3.setHolder("RAMAN SIDARCHUK");
+        paymentCard3.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard3.setActive(true);
+        paymentCard3.setUser(testUser);
+        paymentCardRepository.save(paymentCard3);
+
+        PaymentCard paymentCard4 = new PaymentCard();
+        paymentCard4.setNumber("4444 4444 4444 4444");
+        paymentCard4.setHolder("RAMAN SIDARCHUK");
+        paymentCard4.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard4.setActive(true);
+        paymentCard4.setUser(testUser);
+        paymentCardRepository.save(paymentCard4);
+
+        PaymentCard paymentCard5 = new PaymentCard();
+        paymentCard5.setNumber("5555 5555 5555 5555");
+        paymentCard5.setHolder("RAMAN SIDARCHUK");
+        paymentCard5.setExpirationDate(LocalDate.of(2030, 12, 31));
+        paymentCard5.setActive(true);
+        paymentCard5.setUser(testUser);
+        paymentCardRepository.save(paymentCard5);
+
+        mockMvc.perform(post("/cards/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict());
+
+    }
+
+    @Test
+    void createSelfPaymentCard_ShouldReturn404_WhenUserNotFound() throws Exception {
+        user.setUserId(99L);
+        dto.setUserId(99L);
+
+        mockMvc.perform(post("/cards/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatePaymentCard_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
+
+        mockMvc.perform(put("/cards/{id}", paymentCard.getId())
+                        .with(user(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.number").value("2222 2222 2222 2222"))
+                .andExpect(jsonPath("$.holder").value("RAMAN BEBRA"));
+
+    }
+
+    @Test
+    void updatePaymentCard_ShouldReturn404_WhenNotFound() throws Exception {
+
+        mockMvc.perform(put("/cards/999")
+                        .with(user(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatePaymentCard_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(put("/cards/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updatePaymentCard_ShouldReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(put("/cards/1")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+    }
+
+
+    @Test
+    void updateSelfPaymentCard_ShouldUpdatePaymentCard_WhenSuccessful() throws Exception {
+        dto.setId(paymentCard.getId());
+        mockMvc.perform(put("/cards/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.number").value("2222 2222 2222 2222"))
+                .andExpect(jsonPath("$.holder").value("RAMAN BEBRA"));
+
+    }
+
+    @Test
+    void updateSelfPaymentCard_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(put("/cards/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updateSelfPaymentCard_ShouldReturn403_WhenUnaccessibleCard() throws Exception {
+        dto.setId(paymentCard.getId());
+        user.setUserId(99L);
+
+        mockMvc.perform(put("/cards/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateSelfPaymentCard_ShouldReturn404_WhenCardNotFound() throws Exception {
+        dto.setId(99L);
+
+        mockMvc.perform(put("/cards/me")
+                        .with(user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void findBySelfId_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
+
+        mockMvc.perform(get("/cards/byUser/me")
+                        .with(user(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].number").value(paymentCard.getNumber()))
+                .andExpect(jsonPath("$[0].holder").value(paymentCard.getHolder()));
+
+    }
+
+    @Test
+    void findBySelfId_ShouldReturn404_WhenUserNotFound() throws Exception {
+
+        user.setUserId(99L);
+        mockMvc.perform(get("/cards/byUser/me")
+                        .with(user(user)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void findBySelfId_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(get("/cards/byUser/me"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+
+    @Test
     void findById_ShouldReturnPaymentCard_WhenSuccessful() throws Exception {
 
         Long id = paymentCard.getId();
 
-        mockMvc.perform(get("/cards/{id}", id))
+        mockMvc.perform(get("/cards/{id}", id)
+                        .with(user(admin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.number").value(paymentCard.getNumber()))
                 .andExpect(jsonPath("$.holder").value(paymentCard.getHolder()));
@@ -198,9 +376,36 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void findById_ShouldReturn404_WhenNotFound() throws Exception {
+
+        mockMvc.perform(get("/cards/99")
+                        .with(user(admin)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void findById_ShouldReturn401_WhenNoAuthentication() throws Exception {
+
+        mockMvc.perform(get("/cards/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void findById_ShouldReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(get("/cards/1")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
     void findByUserId_ShouldReturnListOfPaymentCards() throws Exception {
 
-        mockMvc.perform(get("/cards/byUser/{id}", user.getId()))
+        mockMvc.perform(get("/cards/byUser/{id}", testUser.getId())
+                        .with(user(admin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
 
@@ -209,16 +414,25 @@ class PaymentCardControllerTest{
     @Test
     void findByUserId_ShouldReturn404_WhenUserNotFound() throws Exception{
 
-        mockMvc.perform(get("/cards/byUser/99"))
+        mockMvc.perform(get("/cards/byUser/99")
+                        .with(user(admin)))
                 .andExpect(status().isNotFound());
 
     }
 
     @Test
-    void findById_ShouldReturn404_WhenNotFound() throws Exception {
+    void findByUserId_ShouldReturn401_WhenNoAuthentication() throws Exception{
 
-        mockMvc.perform(get("/cards/99"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/cards/byUser/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void findByUserId_ShouldReturn403_WhenNoAccess() throws Exception{
+
+        mockMvc.perform(get("/cards/byUser/1"))
+                .andExpect(status().isUnauthorized());
 
     }
 
@@ -227,7 +441,8 @@ class PaymentCardControllerTest{
 
         mockMvc.perform(get("/cards")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .with(user(admin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].number").value("1111 1111 1111 1111"));
@@ -235,42 +450,118 @@ class PaymentCardControllerTest{
     }
 
     @Test
+    void getPaymentCards_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(get("/cards")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getPaymentCards_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(get("/cards")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void activatePaymentCard_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
-        mockMvc.perform(patch("/cards/{id}/activate", paymentCard.getId()))
+        mockMvc.perform(patch("/cards/{id}/activate", paymentCard.getId())
+                        .with(user(admin)))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void activatePaymentCard_ShouldReturn404_WhenNotFound() throws Exception {
 
-        mockMvc.perform(patch("/cards/99/activate"))
+        mockMvc.perform(patch("/cards/99/activate")
+                        .with(user(admin)))
                 .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void activatePaymentCard_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/activate")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void activatePaymentCard_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/activate"))
+                .andExpect(status().isUnauthorized());
 
     }
 
     @Test
     void deactivatePaymentCard_ShouldChangeActiveStatus_WhenSuccessful() throws Exception {
 
-        mockMvc.perform(patch("/cards/{id}/deactivate", paymentCard.getId()))
+        mockMvc.perform(patch("/cards/{id}/deactivate", paymentCard.getId())
+                        .with(user(admin)))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void deactivatePaymentCard_ShouldReturn404_WhenNotFound() throws Exception {
 
-        mockMvc.perform(patch("/cards/99/deactivate"))
+        mockMvc.perform(patch("/cards/99/deactivate")
+                        .with(user(admin)))
                 .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void deactivatePaymentCard_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/deactivate"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void deactivatePaymentCard_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(patch("/cards/1/deactivate")
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
 
     }
 
     @Test
     void deletePaymentCard_ShouldRemoveFromDatabase() throws Exception {
 
-        mockMvc.perform(delete("/cards/{id}", paymentCard.getId()))
+        mockMvc.perform(delete("/cards/{id}", paymentCard.getId())
+                        .with(user(admin)))
                 .andExpect(status().isNoContent());
 
         assertEquals(0, paymentCardRepository.count());
 
     }
+
+    @Test
+    void deletePaymentCard_ShouldTReturn403_WhenNoAccess() throws Exception {
+
+        mockMvc.perform(delete("/cards/{id}", paymentCard.getId())
+                        .with(user(user)))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void deletePaymentCard_ShouldTReturn401_WhenNoAuthentification() throws Exception {
+
+        mockMvc.perform(delete("/cards/{id}", paymentCard.getId()))
+                .andExpect(status().isUnauthorized());
+
+    }
+
 }

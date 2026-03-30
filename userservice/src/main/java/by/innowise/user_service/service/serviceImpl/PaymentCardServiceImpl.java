@@ -6,6 +6,7 @@ import by.innowise.user_service.entity.PaymentCard;
 import by.innowise.user_service.entity.User;
 import by.innowise.user_service.exception.CardLimitException;
 import by.innowise.user_service.exception.CardNotFoundException;
+import by.innowise.user_service.exception.UnaccessibleCardException;
 import by.innowise.user_service.exception.UserNotFoundException;
 import by.innowise.user_service.repository.PaymentCardRepository;
 import by.innowise.user_service.repository.UserRepository;
@@ -54,6 +55,24 @@ public class PaymentCardServiceImpl implements PaymentCardService{
         PaymentCard paymentCard = paymentCardRepository.findById(id)
                 .orElseThrow(CardNotFoundException::new);
 
+        return getPaymentCard(paymentCardDto, paymentCard);
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = "payment_card", key = "#id"),
+            @CacheEvict(value = "user", key = "#paymentCardDto.userId")
+    })
+    @Transactional
+    public PaymentCardDto updateSelfPaymentCard(Long id, PaymentCardDto paymentCardDto, Long userId) {
+        PaymentCard paymentCard = paymentCardRepository.findById(id)
+                .orElseThrow(CardNotFoundException::new);
+        if (!paymentCard.getUser().getId().equals(userId)) {
+            throw new UnaccessibleCardException();
+        }
+        return getPaymentCard(paymentCardDto, paymentCard);
+    }
+
+    private PaymentCardDto getPaymentCard(PaymentCardDto paymentCardDto, PaymentCard paymentCard) {
         paymentCard.setNumber(paymentCardDto.getNumber());
         paymentCard.setHolder(paymentCardDto.getHolder());
         paymentCard.setExpirationDate(paymentCardDto.getExpirationDate());
