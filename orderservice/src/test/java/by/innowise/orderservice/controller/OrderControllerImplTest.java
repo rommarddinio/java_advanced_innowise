@@ -225,6 +225,22 @@ public class OrderControllerImplTest {
     }
 
     @Test
+    void updateById_ShouldReturn400_WhenStatusIsNotValid() throws Exception {
+        statusDto.setStatus(null);
+        wireMockExtension.stubFor(WireMock.get(urlPathEqualTo("/" + order.getUserId()))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(objectMapper.writeValueAsBytes(userInfo))));
+
+        mockMvc.perform(patch("/orders")
+                        .with(user(admin))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(statusDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void findById_ShouldReturn404_WhenNotFound() throws Exception {
         wireMockExtension.stubFor(WireMock.get(urlPathEqualTo("/" + order.getUserId()))
                 .willReturn(aResponse()

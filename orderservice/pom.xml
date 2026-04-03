@@ -29,6 +29,9 @@
     <properties>
         <java.version>21</java.version>
         <sonar.organization>rommarddinio</sonar.organization>
+        <sonar.cpd.exclusions>**/dto/user/**</sonar.cpd.exclusions>
+        <sonar.cpd.exclusions>**/filter/**</sonar.cpd.exclusions>
+        <sonar.cpd.exclusions>**/entity/**</sonar.cpd.exclusions>
     </properties>
     <dependencies>
         <dependency>
