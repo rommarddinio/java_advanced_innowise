@@ -3,6 +3,8 @@ package by.innowise.user_service.service;
 import by.innowise.user_service.dto.UserDto;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface UserService {
 
     UserDto createUser(UserDto userDto);
@@ -10,6 +12,10 @@ public interface UserService {
     UserDto updateUser(Long id, UserDto userDto);
 
     UserDto findById(Long id);
+
+    UserDto findByEmail(String email);
+
+    List<UserDto> findAllById(List<Long> ids);
 
     void activateUser(Long id);
 
