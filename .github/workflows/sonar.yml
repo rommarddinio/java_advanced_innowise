@@ -57,8 +57,7 @@ jobs:
             -Dsonar.organization=rommarddinio
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.sources=authenticationservice/src/main/java,userservice/src/main/java,authenticationservice/target/generated-sources/annotations,userservice/target/generated-sources/annotations,
-            orderservice/src/main/java,orderservice/target/generated-sources/annotations
+            -Dsonar.sources=authenticationservice/src/main/java,userservice/src/main/java,authenticationservice/target/generated-sources/annotations,userservice/target/generated-sources/annotations,orderservice/src/main/java,orderservice/target/generated-sources/annotations
             -Dsonar.tests=authenticationservice/src/test/java,userservice/src/test/java,orderservice/src/test/java
             -Dsonar.java.binaries=authenticationservice/target/classes,userservice/target/classes,orderservice/target/classes
             -Dsonar.java.libraries=authenticationservice/target/dependency/**/*.jar,userservice/target/dependency/**/*.jar, orderservice/target/dependency/**/*.jar
