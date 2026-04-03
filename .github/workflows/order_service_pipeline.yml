@@ -1,4 +1,4 @@
-name: authentication_service_pipeline
+name: order_service_pipeline
 
 on:
   push:
