@@ -139,4 +139,18 @@ class TokenFilterTest {
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
+
+    @Test
+    void shouldSkipSettingAuthentication_whenUserIdIsNull() throws Exception {
+        String token = "some-token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+
+        when(tokenService.getUserId(token)).thenReturn(null);
+        when(tokenService.getTokenType(token)).thenReturn("ACCESS");
+
+        tokenFilter.doFilterInternal(request, response, filterChain);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(filterChain).doFilter(request, response);
+    }
 }
