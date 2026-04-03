@@ -76,10 +76,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto findById(Long id) {
-        OrderDto dto = orderMapper.toDto(orderRepository.findById(id)
-                .orElseThrow(OrderNotFoundException::new));
+        Order order = orderRepository.findById(id)
+                .orElseThrow(OrderNotFoundException::new);
+        OrderDto dto = orderMapper.toDto(order);
 
-        userInfo = userClientService.findUserById(id);
+        userInfo = userClientService.findUserById(order.getUserId());
         dto.setUserInfo(userInfo);
 
         return dto;

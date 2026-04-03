@@ -241,6 +241,19 @@ public class OrderControllerImplTest {
     }
 
     @Test
+    void findById_ShouldReturn200_WhenSuccessful() throws Exception {
+        wireMockExtension.stubFor(WireMock.get(urlPathEqualTo("/" + order.getUserId()))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(objectMapper.writeValueAsBytes(userInfo))));
+
+        mockMvc.perform(get("/orders/{id}", order.getId())
+                        .with(user(admin)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void findById_ShouldReturn404_WhenNotFound() throws Exception {
         wireMockExtension.stubFor(WireMock.get(urlPathEqualTo("/" + order.getUserId()))
                 .willReturn(aResponse()
