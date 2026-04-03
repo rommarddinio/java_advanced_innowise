@@ -73,29 +73,14 @@ public class MyExceptionHandler {
         return new ResponseEntity<>("Insufficient authentication", HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(UnsupportedJwtException.class)
-    public ResponseEntity<String> handleUnsupportedJwtException(UnsupportedJwtException e) {
-        return new ResponseEntity<>("Unsupported token", HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         return new ResponseEntity<>("Illegal request argument", HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException e) {
-        return new ResponseEntity<>("Token is expired", HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(SignatureException.class)
     public ResponseEntity<String> handleSignatureException(SignatureException e) {
         return new ResponseEntity<>("Token has wrong signature", HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<String> handleMalformedJwtException(MalformedJwtException e) {
-        return new ResponseEntity<>("Token is broken", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
