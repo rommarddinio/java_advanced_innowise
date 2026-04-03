@@ -17,6 +17,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -99,4 +101,20 @@ public class UserServiceImpl implements UserService {
     public void deleteById(Long id) {
         userRepository.deleteById(id);
     }
+
+    @Cacheable(
+            value = "user",
+            key = "#email"
+    )
+    public UserDto findByEmail(String email) {
+        return userMapper.toUserDto(userRepository.findByEmail(email)
+                .orElseThrow(UserNotFoundException::new));
+    }
+
+    @Override
+    public List<UserDto> findAllById(List<Long> ids) {
+        return userRepository.findAllById(ids).stream()
+                .map(userMapper::toUserDto).toList();
+    }
+
 }

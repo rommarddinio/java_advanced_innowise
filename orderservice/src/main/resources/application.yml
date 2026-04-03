@@ -1,0 +1,65 @@
+spring:
+  profiles:
+    active: local
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  liquibase:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET}
+server:
+  port: 8082
+services:
+  user:
+    url: http://localhost:8080/users
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCircuit:
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException.NotFound
+          - by.innowise.orderservice.exception.UserNotFoundException
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  liquibase:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET}
+server:
+  port: 8082
+services:
+  user:
+    url: http://localhost:8080/users
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCircuit:
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException.NotFound
+          - by.innowise.orderservice.exception.UserNotFoundException
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
