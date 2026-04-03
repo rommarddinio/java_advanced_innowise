@@ -40,45 +40,42 @@ public class TokenFilter extends OncePerRequestFilter {
         }
 
         String header = request.getHeader("Authorization");
-
         if (header == null || !header.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Authorization header missing or invalid");
+            writeResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Authorization header missing or invalid");
             return;
         }
 
         String token = header.substring(7);
-
         try {
             Long userId = tokenService.getUserId(token);
             String role = tokenService.getRole(token);
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-
                 MyUserDetails userDetails = new MyUserDetails(userId, role);
-                UsernamePasswordAuthenticationToken authenticationToken =
+                UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
-            if (!tokenService.getTokenType(token).equals("ACCESS")) {
+            if (!"ACCESS".equals(tokenService.getTokenType(token))) {
                 throw new InvalidTokenTypeException();
             }
 
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token is expired");
+            writeResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token is expired");
         } catch (SignatureException | MalformedJwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid token");
+            writeResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         } catch (InvalidTokenTypeException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write(e.getMessage());
+            writeResponse(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
+    }
+
+    private void writeResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.getWriter().write(message);
     }
 
 }
