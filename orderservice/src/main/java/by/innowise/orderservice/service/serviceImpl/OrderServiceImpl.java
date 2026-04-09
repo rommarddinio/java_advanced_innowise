@@ -37,13 +37,12 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final UserClientService userClientService;
 
-    private UserInfo userInfo;
-
+    @Transactional
     @Override
     public OrderDto createOrder(OrderCreateDto dto) {
         Order order = orderMapper.toEntity(dto);
 
-        userInfo = userClientService.findUserByEmail(dto.getEmail());
+        UserInfo userInfo = userClientService.findUserByEmail(dto.getEmail());
         order.setUserId(userInfo.getId());
 
         List<Item> items = itemRepository.findAllById(dto.getItems().stream()
@@ -65,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto updateById(Long id, Status status) {
         Order order = orderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
 
-        userInfo = userClientService.findUserById(order.getUserId());
+        UserInfo userInfo = userClientService.findUserById(order.getUserId());
         if (!Status.isValid(status)) throw new InvalidOrderStatusException();
         order.setStatus(status);
 
@@ -80,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(OrderNotFoundException::new);
         OrderDto dto = orderMapper.toDto(order);
 
-        userInfo = userClientService.findUserById(order.getUserId());
+        UserInfo userInfo = userClientService.findUserById(order.getUserId());
         dto.setUserInfo(userInfo);
 
         return dto;
@@ -90,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderDto> findByUserId(Long id) {
         List<Order> orders = orderRepository.findByUserId(id);
 
-        userInfo = userClientService.findUserById(id);
+        UserInfo userInfo = userClientService.findUserById(id);
 
         return orders.stream().map(order -> {
             OrderDto orderDto = orderMapper.toDto(order);
@@ -101,7 +100,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> findBySelfId() {
-        userInfo = userClientService.findUserBySelfId();
+        UserInfo userInfo = userClientService.findUserBySelfId();
 
         List<OrderDto> dto = orderRepository.findByUserId(userInfo.getId()).stream()
                 .map(orderMapper::toDto).toList();
