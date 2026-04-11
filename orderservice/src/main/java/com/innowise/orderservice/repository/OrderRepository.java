@@ -3,8 +3,6 @@ package com.innowise.orderservice.repository;
 import com.innowise.orderservice.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,9 +11,5 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     List<Order> findByUserId(Long userId);
-
-    @Modifying
-    @Query("UPDATE Order o SET o.deleted = true WHERE o.id = :id")
-    int softDeleteById(Long id);
 
 }

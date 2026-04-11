@@ -3,6 +3,8 @@ package com.innowise.orderservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "items")
+@SQLDelete(sql = "UPDATE items SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class Item extends Auditable {
 
     /**
