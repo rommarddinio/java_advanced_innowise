@@ -51,7 +51,7 @@ public class ItemControllerImpl implements ItemController {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         itemService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);

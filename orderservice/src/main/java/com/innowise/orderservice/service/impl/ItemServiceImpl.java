@@ -55,8 +55,10 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public void deleteById(Long id) {
-        int rows = itemRepository.softDeleteById(id);
-        if(rows == 0) throw new ItemNotFoundException();
+        if (!itemRepository.existsById(id)) {
+            throw new ItemNotFoundException();
+        }
+        itemRepository.deleteById(id);
     }
 
 }

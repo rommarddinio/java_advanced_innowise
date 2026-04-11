@@ -48,7 +48,8 @@ public class OrderControllerImpl implements OrderController {
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<Page<OrderDto>> findAll(int page, int size,
+    public ResponseEntity<Page<OrderDto>> findAll(@RequestParam int page,
+                                                  @RequestParam int size,
                                                   @RequestParam(required = false) Instant startDate,
                                                   @RequestParam(required = false) Instant endDate,
                                                   @RequestParam(required = false) Status status) {
@@ -71,7 +72,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         orderService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);

@@ -138,8 +138,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public void deleteById(Long id) {
-        int rows = orderRepository.softDeleteById(id);
-        if (rows==0) throw new OrderNotFoundException();
+        if (!orderRepository.existsById(id)) {
+            throw new OrderNotFoundException();
+        }
+        orderRepository.deleteById(id);
     }
 
     private BigDecimal calculateTotalPrice(List<OrderItem> orderItems) {
