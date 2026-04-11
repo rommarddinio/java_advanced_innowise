@@ -158,20 +158,23 @@ public class ItemServiceImplTest {
 
     @Test
     void deleteById_ShouldReturnNothing_WhenSuccessful() {
-        when(itemRepository.softDeleteById(item.getId())).thenReturn(1);
+        when(itemRepository.existsById(item.getId())).thenReturn(true);
 
         itemService.deleteById(item.getId());
 
-        verify(itemRepository).softDeleteById(item.getId());
+        verify(itemRepository).existsById(item.getId());
+        verify(itemRepository).deleteById(item.getId());
     }
 
     @Test
     void deleteById_ShouldThrowException_WhenNotFound() {
         item.setId(99L);
-        when(itemRepository.softDeleteById(item.getId())).thenReturn(0);
+        when(itemRepository.existsById(item.getId())).thenReturn(false);
 
-        assertThrows(ItemNotFoundException.class, () -> itemService.deleteById(item.getId()));
+        assertThrows(ItemNotFoundException.class,
+                () -> itemService.deleteById(item.getId()));
 
-        verify(itemRepository).softDeleteById(item.getId());
+        verify(itemRepository).existsById(item.getId());
+        verify(itemRepository, never()).deleteById(anyLong());
     }
 }

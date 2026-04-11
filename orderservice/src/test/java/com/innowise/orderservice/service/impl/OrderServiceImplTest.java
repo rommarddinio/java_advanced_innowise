@@ -180,19 +180,24 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void deleteById_ShouldCallSoftDelete_WhenSuccessful() {
-        when(orderRepository.softDeleteById(1L)).thenReturn(1);
+    void deleteById_ShouldCallDelete_WhenSuccessful() {
+        when(orderRepository.existsById(1L)).thenReturn(true);
 
         orderService.deleteById(1L);
 
-        verify(orderRepository).softDeleteById(1L);
+        verify(orderRepository).existsById(1L);
+        verify(orderRepository).deleteById(1L);
     }
 
     @Test
     void deleteById_ShouldThrowOrderNotFoundException_WhenNotFound() {
-        when(orderRepository.softDeleteById(99L)).thenReturn(0);
+        when(orderRepository.existsById(99L)).thenReturn(false);
 
-        assertThrows(OrderNotFoundException.class, () -> orderService.deleteById(99L));
+        assertThrows(OrderNotFoundException.class,
+                () -> orderService.deleteById(99L));
+
+        verify(orderRepository).existsById(99L);
+        verify(orderRepository, never()).deleteById(anyLong());
     }
 
     @Test

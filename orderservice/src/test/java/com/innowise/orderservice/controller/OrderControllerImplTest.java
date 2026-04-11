@@ -38,6 +38,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -160,7 +161,7 @@ public class OrderControllerImplTest {
     }
 
     @Test
-    void createOrder_ShouldReturn400_WhenItemIsDeleted() throws Exception {
+    void createOrder_ShouldReturn404_WhenItemIsDeleted() throws Exception {
         item.setDeleted(true);
         itemRepository.save(item);
         wireMockExtension.stubFor(WireMock.get(urlPathEqualTo("/search"))
@@ -174,7 +175,7 @@ public class OrderControllerImplTest {
                         .with(user(user))
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(orderCreateDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -360,14 +361,14 @@ public class OrderControllerImplTest {
 
     @Test
     void deleteById_ShouldReturn200_WhenSuccessful() throws Exception {
-        mockMvc.perform(patch("/orders/{id}", order.getId())
+        mockMvc.perform(delete("/orders/{id}", order.getId())
                 .with(user(admin)))
                 .andExpect(status().isOk());
     }
 
     @Test
     void deleteById_ShouldReturn404_WhenNotFound() throws Exception {
-        mockMvc.perform(patch("/orders/{id}", 99L)
+        mockMvc.perform(delete("/orders/{id}", 99L)
                         .with(user(admin)))
                 .andExpect(status().isNotFound());
     }

@@ -22,7 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -123,12 +123,20 @@ class ItemControllerImplTest {
 
     @Test
     void deleteItem_ShouldRemoveItem_WhenSuccessful() throws Exception {
-        mockMvc.perform(patch("/items/{id}", testItem.getId())
+        mockMvc.perform(delete("/items/{id}", testItem.getId())
                         .with(user(admin)))
                 .andExpect(status().isOk());
 
-        Item deleted = itemRepository.findById(testItem.getId()).orElseThrow();
-        assertTrue(deleted.getDeleted());
+        assertFalse(itemRepository.existsById(testItem.getId()));
+    }
+
+    @Test
+    void deleteItem_ShouldReturn404_WhenItemNotFound() throws Exception {
+        Long nonExistingId = 999L;
+
+        mockMvc.perform(delete("/items/{id}", nonExistingId)
+                        .with(user(admin)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
