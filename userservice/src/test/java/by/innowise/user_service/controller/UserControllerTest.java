@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -403,6 +404,35 @@ class UserControllerTest {
         mockMvc.perform(delete("/users/{id}", testUser.getId()))
                 .andExpect(status().isUnauthorized());
 
+    }
+
+    @Test
+    void findByEmail_ShouldReturnUser_WhenFound() throws Exception {
+        mockMvc.perform(get("/users/search")
+                        .param("email", testUser.getEmail())
+                        .with(user(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Roman"))
+                .andExpect(jsonPath("$.email").value("romansidorcuk1@gmail.com"));
+    }
+
+    @Test
+    void findByEmail_ShouldReturn404_WhenNotFound() throws Exception {
+        mockMvc.perform(get("/users/search")
+                        .param("email", "nonexistent@mail.com")
+                        .with(user(admin)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void findAllById_ShouldReturnUsers_WhenFound() throws Exception {
+        mockMvc.perform(post("/users/batch")
+                        .with(user(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(List.of(testUser.getId()))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].email").value("romansidorcuk1@gmail.com"));
     }
 
 }

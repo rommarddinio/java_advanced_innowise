@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/users")
@@ -76,6 +78,18 @@ public class UserController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         userService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping("/search")
+    public ResponseEntity<UserDto> findByEmail(@RequestParam String email) {
+        return new ResponseEntity<>(userService.findByEmail(email), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/batch")
+    public ResponseEntity<List<UserDto>> findAllById(@RequestBody List<Long> ids) {
+        return new ResponseEntity<>(userService.findAllById(ids), HttpStatus.OK);
     }
 
 }

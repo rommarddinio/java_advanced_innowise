@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/add-orders-table.sql
+  - include:
+      file: db/changelog/changeset/add-items-table.sql
+  - include:
+      file: db/changelog/changeset/add-order-items-table.sql
+  - include:
+      file: db/changelog/changeset/add-indexes-orders-table.sql
+  - include:
+      file: db/changelog/changeset/add-indexes-items-table.sql
+  - include:
+      file: db/changelog/changeset/add-indexes-order-items-table.sql
+  - include:
+      file: db/changelog/changeset/add-deleted-column-in-item-table.sql
